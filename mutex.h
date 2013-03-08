@@ -36,6 +36,8 @@
 **   SQLITE_MUTEX_PTHREADS     For multi-threaded applications on Unix.
 **
 **   SQLITE_MUTEX_W32          For multi-threaded applications on Win32.
+**
+**   SQLITE_MUTEX_VMS          For multi-threaded applications on OpenVMS.
 */
 #if !SQLITE_THREADSAFE
 # define SQLITE_MUTEX_OMIT
@@ -45,6 +47,8 @@
 #    define SQLITE_MUTEX_PTHREADS
 #  elif SQLITE_OS_WIN
 #    define SQLITE_MUTEX_W32
+#  elif SQLITE_OS_VMS
+#    define SQLITE_MUTEX_VMS
 #  else
 #    define SQLITE_MUTEX_NOOP
 #  endif
