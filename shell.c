@@ -45,6 +45,19 @@
 # include <sys/types.h>
 #endif
 
+#if defined(VMS)
+# include <descrip.h>
+# include <rms.h>
+# include <smgdef.h>
+# include <stsdef.h>
+# if !defined(VAX)
+#  include <lib$routines.h>
+#  include <smg$routines.h>
+#  include <starlet.h>
+#  include <str$routines.h>
+# endif
+#endif
+
 #ifdef HAVE_EDITLINE
 # include <editline/editline.h>
 #endif
@@ -90,7 +103,7 @@ static int enableTimer = 0;
 #define IsDigit(X)  isdigit((unsigned char)X)
 #define ToLower(X)  (char)tolower((unsigned char)X)
 
-#if !defined(_WIN32) && !defined(WIN32) && !defined(_WRS_KERNEL)
+#if !defined(_WIN32) && !defined(WIN32) && !defined(_WRS_KERNEL) && !defined(VMS)
 #include <sys/time.h>
 #include <sys/resource.h>
 
@@ -200,6 +213,33 @@ static void endTimer(void){
 #define BEGIN_TIMER beginTimer()
 #define END_TIMER endTimer()
 #define HAS_TIMER hasTimer()
+
+#elif defined(VMS)
+
+/* Saved resource information for the beginning of an operation */
+static int context = 0;
+
+/*
+** Begin timing an operation
+*/
+static void beginTimer(void){
+  if( enableTimer ){
+    lib$init_timer(&context);
+  }
+}
+
+/*
+** Print the timing results.
+*/
+static void endTimer(void){
+  if( enableTimer ){
+    lib$show_timer(&context);
+  }
+}
+
+#define BEGIN_TIMER beginTimer()
+#define END_TIMER endTimer()
+#define HAS_TIMER 1
 
 #else
 #define BEGIN_TIMER 
