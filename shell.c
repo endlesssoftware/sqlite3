@@ -365,6 +365,7 @@ static void shellstaticFunc(
 }
 
 
+#if !defined(VMS)
 /*
 ** This routine reads a line of text from FILE in, stores
 ** the text in memory obtained from malloc() and returns a pointer
@@ -416,6 +417,61 @@ static char *local_getline(char *zPrompt, FILE *in, int csvFlag){
   zLine = realloc( zLine, n+1 );
   return zLine;
 }
+#else
+
+/*
+** This routine reads a line of text from SYS$INPUT, stores
+** the text in memory obtained from malloc() and returns a pointer
+** to the text.  NULL is returned at end of file, or if malloc()
+** fails.
+**
+** This interface uses SMG to handle command line recall and command
+** line editing.
+*/
+static char *local_getline(char *zPrompt, FILE *in, int csvFlag){
+
+  static int kb = 0;
+  struct dsc$descriptor dPrompt;
+  struct dsc$descriptor dLine;
+  char *zLine = NULL;
+  int status;
+
+  if( !kb ){
+    status = smg$create_virtual_keyboard(&kb);
+    if( !$VMS_STATUS_SUCCESS( status ) ){
+      sys$exit(status);
+    }
+  }
+
+  dPrompt.dsc$b_dtype = DSC$K_DTYPE_T;
+  dPrompt.dsc$b_class = DSC$K_CLASS_S;
+  if( zPrompt ){
+    dPrompt.dsc$w_length = strlen(zPrompt);
+    dPrompt.dsc$a_pointer = zPrompt;
+  }else{
+    dPrompt.dsc$w_length = 0;
+    dPrompt.dsc$a_pointer = 0;
+  }
+
+  dLine.dsc$w_length = 0;
+  dLine.dsc$b_dtype = DSC$K_DTYPE_T;
+  dLine.dsc$b_class = DSC$K_CLASS_D;
+  dLine.dsc$a_pointer = 0;
+
+  status = smg$read_composed_line(&kb,0,&dLine,&dPrompt);
+  if( $VMS_STATUS_SUCCESS( status ) ){
+    zLine = malloc(dLine.dsc$w_length + 1);
+    if( zLine ){
+      memcpy(zLine,dLine.dsc$a_pointer,dLine.dsc$w_length);
+      zLine[dLine.dsc$w_length] = '\0';
+    }
+    str$free1_dx(&dLine);
+  }
+
+  return zLine;
+}
+
+#endif /* !VMS */
 
 /*
 ** Retrieve a single line of input text.
