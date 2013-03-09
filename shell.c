@@ -2814,6 +2814,8 @@ static int process_input(struct callback_data *p, FILE *in){
   return errCnt>0;
 }
 
+#if !defined(VMS)
+
 /*
 ** Return a pathname which is the user's home directory.  A
 ** 0 return indicates an error of some kind.
@@ -2876,6 +2878,8 @@ static char *find_home_dir(void){
 
   return home_dir;
 }
+
+#endif /* !VMS */
 
 /*
 ** Read input from the file given by sqliterc_override.  Or if that
@@ -3239,6 +3243,7 @@ int main(int argc, char **argv){
         "Enter SQL statements terminated with a \";\"\n",
         sqlite3_libversion(), sqlite3_sourceid()
       );
+#if !defined(VMS)
       zHome = find_home_dir();
       if( zHome ){
         nHistory = strlen30(zHome) + 20;
@@ -3246,6 +3251,7 @@ int main(int argc, char **argv){
           sqlite3_snprintf(nHistory, zHistory,"%s/.sqlite_history", zHome);
         }
       }
+#endif
 #if defined(HAVE_READLINE) && HAVE_READLINE==1
       if( zHistory ) read_history(zHistory);
 #endif
