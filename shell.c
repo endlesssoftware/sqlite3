@@ -445,7 +445,7 @@ static char *local_getline(char *zPrompt, FILE *in, int csvFlag){
 
   dPrompt.dsc$b_dtype = DSC$K_DTYPE_T;
   dPrompt.dsc$b_class = DSC$K_CLASS_S;
-  if( zPrompt ){
+  if( zPrompt && *zPrompt ){
     dPrompt.dsc$w_length = strlen(zPrompt);
     dPrompt.dsc$a_pointer = zPrompt;
   }else{
@@ -2893,6 +2893,7 @@ static int process_sqliterc(
   FILE *in = NULL;
   int rc = 0;
 
+#if !defined(VMS)
   if (sqliterc == NULL) {
     home_dir = find_home_dir();
     if( home_dir==0 ){
@@ -2906,6 +2907,13 @@ static int process_sqliterc(
     sqliterc = zBuf;
   }
   in = fopen(sqliterc,"rb");
+#else
+  if (sqliterc == 0) {
+    sqlite3_initialize();
+    sqliterc = "SQLITERC";
+  }
+  in = fopen(sqliterc,"rb" dna="SYS$LOGIN:.DAT");
+#endif /* !VMS */
   if( in ){
     if( stdin_is_interactive ){
       fprintf(stderr,"-- Loading resources from %s\n",sqliterc);
@@ -2913,7 +2921,7 @@ static int process_sqliterc(
     rc = process_input(p,in);
     fclose(in);
   }
-  sqlite3_free(zBuf);
+  if (zBuf != 0) sqlite3_free(zBuf);
   return rc;
 }
 
