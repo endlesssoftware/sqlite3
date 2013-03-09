@@ -22,17 +22,19 @@
 #ifdef VMS
 
 #include <descrip.h>
-#include <lib$routines.h>
 #include <libvmdef.h>
 #include <ssdef.h>
 #include <starlet.h>
 #include <stdlib.h>
 #include <stsdef.h>
+#if !defined(VAX)
+# include <lib$routines.h>
+#endif
 
-static int _sqliteZone_ = 0;
+static long _sqliteZone_ = 0;
 
 static void *sqlite3MemMalloc(int nByte){
-  int *pNew, szNew = nByte + sizeof(int);
+  long *pNew, szNew = nByte + sizeof(int);
   if( $VMS_STATUS_SUCCESS(lib$get_vm(&szNew, &pNew, &_sqliteZone_)) ){
     *pNew = nByte;
     return ++pNew;
@@ -41,7 +43,7 @@ static void *sqlite3MemMalloc(int nByte){
 }
 
 static void sqlite3MemFree(void *pPrior){
-  int *pOld = ((int *)pPrior) - 1, szOld = *pOld + sizeof(int);
+  long *pOld = ((long *)pPrior) - 1, szOld = *pOld + sizeof(int);
 
   lib$free_vm(&szOld, &pOld, &_sqliteZone_);
 }
