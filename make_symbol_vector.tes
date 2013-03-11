@@ -103,63 +103,6 @@ ESUS [S EVUS [S ETUS [S EUUS [S	! so we can restore the user to		!
 @EI%%				! Close this file			!
 
 ! --------------------------------------------------------------------- !
-! *			Load the input routine				!
-!									!
-!	Executed from G$						!
-!		ET value is passed as an argument			!
-!	Uses		I$, I%						!
-!	Value returned in I$						!
-! --------------------------------------------------------------------- !
-
-@^UG/UI ETU.T QIET			! Save ET flag, set new ET flag	!
-.U.P					! Save current pointer		!
-0,0XI					! Initialize I$			!
-<
-^TUI					! Grab a character, store in I%	!
-QI-27"G					! If it's not a Control char	!
-	QI-127"N			!   then if not DELete		!
-		@QII%%			!     then save it		!
-	|				!   else			!
-	Q.P-."E				!   If nothing there yet	!
-		^[			!     do nothing		!
-	|				!   else			!
-	(ET & 2)"G			!   If a scope terminal		!
-		8^T 32^T 8^T -D		!     then rub it out		!
-	|				!   else			!
-	@^A%\% QI^T -D			!   Do a \char			!
-	' ' '
-|					! else				!
-QI-13"E					! If it's a CR			!
-	^TUI 0;				!   then grab the LF, set exit	!
-|					! else				!
-QI-10"E					! If it's a LF			!
-	13^T 0;				!   then echo a CR, set exit	!
-|					! else				!
-QI-12"E					! If it's a FF			!
-	^[ 0;				!   then just set exit		!
-|					! else				!
-QI-27"E					! If it's an ESC		!
-	^[ 0;				!   then set exit		!
-|					! else				!
-QI-26"E					! If it's a ^Z			!
-	^[ 0;				!   then set exit		!
-|					! else				!
-QI-21"E					! If it's a ^U			!
-	Q.P,.K 13^T 10^T		!   then kill the lot		!
-|					! else				!
-QI-18"E					! If it's a ^R			!
-	13^T 10^T Q.P,.T		!   then redisplay the stuff	!
-|					! else				!
-@QII%%					! Save the character		!
-' ' ' ' ' ' ' '
->
-Q.P,.XI					! Save text in I$		!
-Q.P,.K					! Delete text from the buffer	!
-Q.PJ					! Restore pointer		!
-Q.TET					! Restore ET flag		!
-/
-
-! --------------------------------------------------------------------- !
 ! * Load the object library listing and format as ^ delimited records.	!
 !									!
 !	Executed from L$						!
@@ -224,10 +167,8 @@ Q.TET					! Restore ET flag		!
     0^[^[				!   exit with error		!
 '					! endif not there		!
 
-:@ER%^EQ.I%"F
-    @^U.V%%
-|
-    @^U.V%^%
+@^U.V%^%
+:@ER%^EQ.I%"S
     < :EY;
     	<
 	    :X.V :@^U.V%^0^%
@@ -237,33 +178,6 @@ Q.TET					! Restore ET flag		!
 
 [.V					! Push result			!
 /
-
-! --------------------------------------------------------------------- !
-! *			Load the date routine				!
-!									!
-!	Executed from D$						!
-!	Value returned in 0$						!
-! --------------------------------------------------------------------- !
-@^UD$^[
-.U.P ZJ .U.Z
-^B&31+100\ 3R D ZJ @I%-%
-^B/32&15U.M
--1%.M"E @I%Jan% @O!GOTMON! '
--1%.M"E @I%Feb% @O!GOTMON! '
--1%.M"E @I%Mar% @O!GOTMON! '
--1%.M"E @I%Apr% @O!GOTMON! '
--1%.M"E @I%May% @O!GOTMON! '
--1%.M"E @I%Jun% @O!GOTMON! '
--1%.M"E @I%Jul% @O!GOTMON! '
--1%.M"E @I%Aug% @O!GOTMON! '
--1%.M"E @I%Sep% @O!GOTMON! '
--1%.M"E @I%Oct% @O!GOTMON! '
--1%.M"E @I%Nov% @O!GOTMON! '
-@I%Dec%
-!GOTMON! @I%-%
-^B/32/16+1900\
-Q.Z,.X0 Q.Z,.K
-Q.PJ ^[$
 
 ! --------------------------------------------------------------------- !
 ! *									!
@@ -284,7 +198,7 @@ G.O 0J Z"N <@FS%^ES% %;>		! Clean up the buffer, if there	!
 
 :Q.I"N					! If there is input spec	!
     @^A%Loading new symbols from "% :G.I @^A%"% 13^T 10^T
-    [.I ML :]L"S
+    [.I ML :].L"S
 	:Q.O"N
 	    @^A%Symbol vector load from/store to "% :G.O @^A%"% 13^T 10^T
 	    [.O MV :].V"F
@@ -296,8 +210,25 @@ G.O 0J Z"N <@FS%^ES% %;>		! Clean up the buffer, if there	!
     '
 '
 
-:Q.L+:Q.V"N
-    @^A%We can proceed...% 13^T 10^T
+:Q.L"N
+    HK G.V
+    0U.P
+    <
+    	@^U.S%%
+    	<
+	    1%.PQ.LU0
+	    Q0-^^^"E 0;'
+	    Q0:@^U.S%%
+    	>
+        0J :@S%^Q^^EQ.S^Q^%"F
+	    ZJ G.S @I%^2^%
+	!
+	    ! Need to update the flag to 1 !
+    	'
+    :Q.L-(Q.P+1)"E 0;' >
+    HX.V HK				! Store updated vector in $.V	!
+
+    ! process to build vector...mention new symbols and gone symbols !
 '
 
 ! --------------------------------------------------------------------- !
