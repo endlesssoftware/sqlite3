@@ -209,7 +209,6 @@ Q.TET					! Restore ET flag		!
     L .-Z;>				! Advance line, leave if none	!
 >
 [.N					! Push result			!
--1^[^[					! exit, success			!
 /
 
 ! --------------------------------------------------------------------- !
@@ -225,20 +224,18 @@ Q.TET					! Restore ET flag		!
     0^[^[				!   exit with error		!
 '					! endif not there		!
 
-:@ER%^EQ.I%"F                           ! If could not open file then   !
-    @^A%Can't find file "% :G.I @^A%"% 13^T 2<10^T>
-    0^[^[                          	!   indicate failure and exit   !
-'					! endif could not open file	!
-
-@^U.V%^%
-< :EY;					! Yank in a page		!
-    <
-	:X.V :@^U.V%^0^%
-    L .-Z; >
->
+:@ER%^EQ.I%"F
+    @^U.V%%
+|
+    @^U.V%^%
+    < :EY;
+    	<
+	    :X.V :@^U.V%^0^%
+    	L .-Z; >
+    >
+'
 
 [.V					! Push result			!
--1^[^[					! exit, success			!
 /
 
 ! --------------------------------------------------------------------- !
@@ -287,24 +284,17 @@ G.O 0J Z"N <@FS%^ES% %;>		! Clean up the buffer, if there	!
 
 :Q.I"N					! If there is input spec	!
     @^A%Loading new symbols from "% :G.I @^A%"% 13^T 10^T
-    [.I ML"S				!   If new syms loaded		!
-	:].L				!     then save symbols		!
-	:Q.O"N				!     If there is out spec.	!
+    [.I ML :]L"S
+	:Q.O"N
 	    @^A%Symbol vector load from/store to "% :G.O @^A%"% 13^T 10^T
-	    [.O MV"S			!       then If load vector.	!
-		:].V			!         then save vector	!
-	    |				!       else			!
+	    [.O MV :].V"F
 		@^A%Can't load symbol vector% 13^T 2<10^T>
-	    '				!       endif load vector	!
-	|				!     else			!
-	@^A%Can't find file "% :G.O @^A%"% 13^T 2<10^T>
-	'				!     endif there is out spec.	!
-    |					!   else			!
+	    '
+	'
+    |
 	@^A%Can't load new symbols% 13^T 2<10^T>
-    '					!   endif new syms loaded	!
-|					! else				!
-    @^A%Can't find file "% :G.I @^A%"% 13^T 2<10^T>
-'					! endif there is input spec.	!
+    '
+'
 
 :Q.L+:Q.V"N
     @^A%We can proceed...% 13^T 10^T
