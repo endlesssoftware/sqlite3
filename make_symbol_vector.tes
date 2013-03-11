@@ -1,0 +1,321 @@
+! --------------------------------------------------------------------- !
+!  FACILITY:	SQLITE3							!
+!									!
+!  ABSTRACT:	Builds the symbol vector for the SQLite3 shareable	!
+!		image.							!
+!									!
+!  MODULE DESCRIPTION:							!
+!									!
+!	This module contains the code that builds the symbol vector	!
+!  for SQLITE3.  It does this by reading in an existing symbol table,	!
+!  then the symbols defined in the object library.  Any new symbols are !
+!  tacked on the end and the new symbol vector is saved.  If any symbols!
+!  are not present in the object library that are listed in the symbol  !
+!  vectore, are warning is issued.					!
+!									!
+!	   ** Note - this macro must be squished before use **		!
+!									!
+!  AUTHOR:	Tim Sneddon.						!
+!									!
+!  Copyright (c) 2013, Endless Software Solutions.			!
+!									!
+!  All rights reserved.							!
+!									!
+!  Redistribution and use in source and binary forms, with or without	!
+!  modification, are permitted provided that the following conditions	!
+!  are met:								!
+!									!
+!      * Redistributions of source code must retain the above		!
+!        copyright notice, this list of conditions and the following	!
+!        disclaimer.							!
+!      * Redistributions in binary form must reproduce the above	!
+!        copyright notice, this list of conditions and the following	!
+!        disclaimer in the documentation and/or other materials provided!
+!        with the distribution.						!
+!      * Neither the name of the copyright owner nor the names of any	!
+!        other contributors may be used to endorse or promote products	!
+!        derived from this software without specific prior written	!
+!        permission.							!
+!									!
+!  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS	!
+!  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT	!
+!  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR!
+!  A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT !
+!  OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,!
+!  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT	!
+!  LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,!
+!  DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY!
+!  THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT  !
+!  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE!
+!  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. !
+!									!
+!  CREATION DATE:  9-MAR-2013						!
+!									!
+!  MODIFICATION HISTORY:						!
+!									!
+!      09-MAR-2013 V1.0    Sneddon     Initial coding.			!
+! --------------------------------------------------------------------- !
+
+@^A%MAKE_SYMBOL_VECTOR  V1.0%	! Identify myself...			!
+13^T 10^T
+
+0J Z"N <@FS%^ES% %;>		! Clean up the buffer, if it's there	!
+	0J 0A-32"E D '		!   strip leading spaces		!
+	ZJ -1A-32"E -D '	!   and trailing spaces			!
+'				! endif buffer there			!
+HXZ HK				! Save possible command			!
+
+!		Set flags for our use, and close this file		!
+
+[S ^XUS [S EDUS [S EHUS [S	! Save all the existing flags		!
+ESUS [S EVUS [S ETUS [S EUUS [S	! so we can restore the user to		!
+				! his original state on exit		!
+
+^D				! Set Radix to 10			!
+-1^X				! Case-sensitive search			!
+0ED				! ^ in search means ConTRL		!
+				! Disable Y or _ if data loss		!
+2EH				! Full error messages			!
+0ES 0EV				! No typeout after search		!
+2#16#128#512#8192ET
+! Set ET flag as follows -						!
+!     1 rw typeout in image mode					!
+!     2 rw terminal is a scope						!
+!     4 rw read lower case						!
+!     8 rw ^T reads with no echo					!
+!    16 rw cancel ^O on typeout						!
+!    32 rw read with no wait, returns -1 if no input			!
+!    64 rw detach flag							!
+!   128 rw abort on error						!
+!   256 rw truncate to set width					!
+!   512 ro terminal is scope and watch is present			!
+!  1024 ro terminal is refresh and watch is present			!
+!  2048 xx not used							!
+!  4096 rw 1 => 8bit, 0 => 7bit						!
+!  8192 rw Surrogate escape on						!
+! 16384 xx not used							!
+! 32768 rw trap ^C and reset						!
+-1EU				! No case flagging on output		!
+!  EO  is Teco's Version Number						!
+! 0EJ  is Job Number							!
+! 1EJ  is KB Number							!
+! 2EJ  is PPN								!
+@EI%%				! Close this file			!
+
+! --------------------------------------------------------------------- !
+! *			Load the input routine				!
+!									!
+!	Executed from G$						!
+!		ET value is passed as an argument			!
+!	Uses		I$, I%						!
+!	Value returned in I$						!
+! --------------------------------------------------------------------- !
+
+@^UG/UI ETU.T QIET			! Save ET flag, set new ET flag	!
+.U.P					! Save current pointer		!
+0,0XI					! Initialize I$			!
+<
+^TUI					! Grab a character, store in I%	!
+QI-27"G					! If it's not a Control char	!
+	QI-127"N			!   then if not DELete		!
+		@QII%%			!     then save it		!
+	|				!   else			!
+	Q.P-."E				!   If nothing there yet	!
+		^[			!     do nothing		!
+	|				!   else			!
+	(ET & 2)"G			!   If a scope terminal		!
+		8^T 32^T 8^T -D		!     then rub it out		!
+	|				!   else			!
+	@^A%\% QI^T -D			!   Do a \char			!
+	' ' '
+|					! else				!
+QI-13"E					! If it's a CR			!
+	^TUI 0;				!   then grab the LF, set exit	!
+|					! else				!
+QI-10"E					! If it's a LF			!
+	13^T 0;				!   then echo a CR, set exit	!
+|					! else				!
+QI-12"E					! If it's a FF			!
+	^[ 0;				!   then just set exit		!
+|					! else				!
+QI-27"E					! If it's an ESC		!
+	^[ 0;				!   then set exit		!
+|					! else				!
+QI-26"E					! If it's a ^Z			!
+	^[ 0;				!   then set exit		!
+|					! else				!
+QI-21"E					! If it's a ^U			!
+	Q.P,.K 13^T 10^T		!   then kill the lot		!
+|					! else				!
+QI-18"E					! If it's a ^R			!
+	13^T 10^T Q.P,.T		!   then redisplay the stuff	!
+|					! else				!
+@QII%%					! Save the character		!
+' ' ' ' ' ' ' '
+>
+Q.P,.XI					! Save text in I$		!
+Q.P,.K					! Delete text from the buffer	!
+Q.PJ					! Restore pointer		!
+Q.TET					! Restore ET flag		!
+/
+
+! --------------------------------------------------------------------- !
+! * Load the object library listing and format as ^ delimited records.	!
+!									!
+!	Executed from L$						!
+!		.I$ passed in from push-down list.			!
+!	Value returned, -1 for success or 0 for failure.  Result on 	!
+!	  push-down list.						!
+! --------------------------------------------------------------------- !
+
+@^UL/
+:].I"F					! Get input file, if not there	!
+    0^[^[				!   exit with error		!
+'					! endif not there		!
+
+:@ER%^EQ.I%"F                           ! If could not open file then   !
+    @^A%Can't find file "% :G.I @^A%"% 13^T 2<10^T>
+    0^[^[                          	!   indicate failure and exit   !
+'					! endif could not open file	!
+
+0U.M					! Clear "in module"		!
+@^U.N%^%
+< :EY;					! Yank in a page		!
+    <
+	::@S%Module %"S			! If line starts Module		!
+	    -1U.M			!   then set "in module"	!
+	    @^A%Processing % T
+	| Q.M"S				! elseIf "in module"		!
+	    <
+		::@S%^ES%
+		.U.P
+		@:FB% %"S
+		    ^SC	
+		| @:FB%^EL%"S
+		    2R
+		    Q.P-."E
+			0U.M
+			0;
+		    '
+		' '
+		.U.N
+		Q.P,.:@FB%_%"F
+		    Q.P,.:X.N ^^^:@^U.N%%
+		|
+		    Q.NJ
+		'
+	    >
+	' '				! endIf				!
+    L .-Z;>				! Advance line, leave if none	!
+>
+[.N					! Push result			!
+-1^[^[					! exit, success			!
+/
+
+! --------------------------------------------------------------------- !
+! * Load the object library listing into $N.				!
+!									!
+!	Executed from M$						!
+!		.I$ passed in from push-down list.			!
+!	Value returned in N$						!
+! --------------------------------------------------------------------- !
+
+@^UV/
+:].I"F					! Get input file, if not there	!
+    0^[^[				!   exit with error		!
+'					! endif not there		!
+
+:@ER%^EQ.I%"F                           ! If could not open file then   !
+    @^A%Can't find file "% :G.I @^A%"% 13^T 2<10^T>
+    0^[^[                          	!   indicate failure and exit   !
+'					! endif could not open file	!
+
+@^U.V%^%
+< :EY;					! Yank in a page		!
+    <
+	:X.V :@^U.V%^0^%
+    L .-Z; >
+>
+
+[.V					! Push result			!
+-1^[^[					! exit, success			!
+/
+
+! --------------------------------------------------------------------- !
+! *			Load the date routine				!
+!									!
+!	Executed from D$						!
+!	Value returned in 0$						!
+! --------------------------------------------------------------------- !
+@^UD$^[
+.U.P ZJ .U.Z
+^B&31+100\ 3R D ZJ @I%-%
+^B/32&15U.M
+-1%.M"E @I%Jan% @O!GOTMON! '
+-1%.M"E @I%Feb% @O!GOTMON! '
+-1%.M"E @I%Mar% @O!GOTMON! '
+-1%.M"E @I%Apr% @O!GOTMON! '
+-1%.M"E @I%May% @O!GOTMON! '
+-1%.M"E @I%Jun% @O!GOTMON! '
+-1%.M"E @I%Jul% @O!GOTMON! '
+-1%.M"E @I%Aug% @O!GOTMON! '
+-1%.M"E @I%Sep% @O!GOTMON! '
+-1%.M"E @I%Oct% @O!GOTMON! '
+-1%.M"E @I%Nov% @O!GOTMON! '
+@I%Dec%
+!GOTMON! @I%-%
+^B/32/16+1900\
+Q.Z,.X0 Q.Z,.K
+Q.PJ ^[$
+
+! --------------------------------------------------------------------- !
+! *									!
+!									!
+! --------------------------------------------------------------------- !
+
+:QZ"N					! If something given on command	!
+    HK GZ HX.O HK			!   then use it (put it in .O$)	!
+'					! endif				!
+G.O 0J Z"N <@FS%^ES% %;>		! Clean up the buffer, if there	!
+    0J 0A-32"E D '			!   strip leading spaces	!
+    ZJ -1A-32"E -D '			!   and trailing spaces		!
+    0J @:S%=%"S				!   search '=', if found	!
+	0,.+^SX.O			!     then store output in .O$	!
+	.,ZX.I				!     store input in .I$	!
+    '					!   end if found '='		!
+'					! endif buffer there		!
+
+:Q.I"N					! If there is input spec	!
+    @^A%Loading new symbols from "% :G.I @^A%"% 13^T 10^T
+    [.I ML"S				!   If new syms loaded		!
+	:].L				!     then save symbols		!
+	:Q.O"N				!     If there is out spec.	!
+	    @^A%Symbol vector load from/store to "% :G.O @^A%"% 13^T 10^T
+	    [.O MV"S			!       then If load vector.	!
+		:].V			!         then save vector	!
+	    |				!       else			!
+		@^A%Can't load symbol vector% 13^T 2<10^T>
+	    '				!       endif load vector	!
+	|				!     else			!
+	@^A%Can't find file "% :G.O @^A%"% 13^T 2<10^T>
+	'				!     endif there is out spec.	!
+    |					!   else			!
+	@^A%Can't load new symbols% 13^T 2<10^T>
+    '					!   endif new syms loaded	!
+|					! else				!
+    @^A%Can't find file "% :G.I @^A%"% 13^T 2<10^T>
+'					! endif there is input spec.	!
+
+:Q.L+:Q.V"N
+    @^A%We can proceed...% 13^T 10^T
+'
+
+! --------------------------------------------------------------------- !
+! *		    Now restore all the flags and exit			!
+! --------------------------------------------------------------------- !
+
+]S QSEU ]S QSET ]S QSEV ]S QSES ]S	! Restore all the flags we	!
+QSEH ]S QSED ]S QS^X ]S			! saved at the start		!
+
+^C
+
