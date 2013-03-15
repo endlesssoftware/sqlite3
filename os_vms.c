@@ -929,7 +929,7 @@ static void *vmsDlOpen(
   return 0;
 }
 
-void (*vmsDlSym(
+static void (*vmsDlSym(
   sqlite3_vfs *pVfs,
   void *pHandle,
   const char *zSymbol
@@ -969,7 +969,7 @@ static void vmsDlClose(
 # define vmsDlClose 0
 #endif
 
-int vmsRandomness(
+static int vmsRandomness(
   sqlite3_vfs *pVfs,        /* VFS record */
   int nBuf,                 /* Length of output buffer */
   char *zBuf                /* Buffer to write random data to */
