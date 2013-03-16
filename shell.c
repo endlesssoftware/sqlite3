@@ -2916,7 +2916,7 @@ static int process_sqliterc(
     sqlite3_initialize();
     sqliterc = "SQLITERC";
   }
-  in = fopen(sqliterc,"rb" dna="SYS$LOGIN:.DAT");
+  in = fopen(sqliterc,"rb" "dna=SYS$LOGIN:.DAT");
 #endif /* !VMS */
   if( in ){
     if( stdin_is_interactive ){
