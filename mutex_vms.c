@@ -104,7 +104,7 @@ static sqlite3_mutex *vmsMutexAlloc(int iType){
         */
         tis_mutex_init(&p->mutex);
         p->mutex.lock &= ~_PTHREAD_MSTATE_TYPE;     /* Clear mutex type */
-        p->mutex.lock |= _PTHREAD_MTYPE_RECURS;     /* Set mutex type to recursi
+        p->mutex.lock |= _PTHREAD_MTYPE_RECURS;     /* Set mutex type to recursive */
 #else
         /*
         ** Although not documented, this is the routine used by the
