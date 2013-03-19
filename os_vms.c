@@ -115,7 +115,7 @@ static int vmsClose(
   return SQLITE_OK;
 }
 
-int vmsRead(
+static int vmsRead(
   sqlite3_file *id,         /* File to read from */
   void *vBuf,               /* Write content into this buffer */
   int amt,                  /* Number of bytes to read */
@@ -553,7 +553,7 @@ static int vmsDeviceCharacteristics(
   return SQLITE_IOCAP_ATOMIC512 | SQLITE_IOCAP_SEQUENTIAL;
 }
 
-int vmsShmMap(
+static int vmsShmMap(
   sqlite3_file *id,               /* Handle open on database file */
   int iRegion,                    /* Region to retrieve */
   int szRegion,                   /* Size of regions */
@@ -592,7 +592,7 @@ int vmsShmMap(
   return SQLITE_OK;
 }
 
-int vmsShmLock(
+static int vmsShmLock(
   sqlite3_file *id,
   int offset,
   int n,
@@ -615,7 +615,7 @@ int vmsShmLock(
   return SQLITE_OK;
 }
 
-void vmsShmBarrier(
+static void vmsShmBarrier(
   sqlite3_file *id
 ){
   int status;
@@ -630,7 +630,7 @@ void vmsShmBarrier(
 #endif
 }
 
-int vmsShmUnmap(
+static int vmsShmUnmap(
   sqlite3_file *id,
   int deleteFlag
 ){
