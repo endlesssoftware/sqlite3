@@ -72,7 +72,7 @@ ESUS [S EVUS [S ETUS [S EUUS [S	! so we can restore the user to		!
 				! his original state on exit		!
 
 ^D				! Set Radix to 10			!
--1^X				! Case-sensitive search			!
+0^X				! Case-sensitive search			!
 0ED				! ^ in search means ConTRL		!
 				! Disable Y or _ if data loss		!
 2EH				! Full error messages			!
@@ -103,131 +103,239 @@ ESUS [S EVUS [S ETUS [S EUUS [S	! so we can restore the user to		!
 @EI%%				! Close this file			!
 
 ! --------------------------------------------------------------------- !
-! * Load the object library listing and format as ^ delimited records.	!
-!									!
-!	Executed from L$						!
-!		.I$ passed in from push-down list.			!
-!	Value returned, -1 for success or 0 for failure.  Result on 	!
-!	  push-down list.						!
-! --------------------------------------------------------------------- !
-
-@^UL/
-:].I"F					! Get input file, if not there	!
-    0^[^[				!   exit with error		!
-'					! endif not there		!
-
-:@ER%^EQ.I%"F                           ! If could not open file then   !
-    @^A%Can't find file "% :G.I @^A%"% 13^T 2<10^T>
-    0^[^[                          	!   indicate failure and exit   !
-'					! endif could not open file	!
-
-0U.M					! Clear "in module"		!
-@^U.N%^%
-< :EY;					! Yank in a page		!
-    <
-	::@S%Module %"S			! If line starts Module		!
-	    -1U.M			!   then set "in module"	!
-	    @^A%Processing % T
-	| Q.M"S				! elseIf "in module"		!
-	    <
-		::@S%^ES%
-		.U.P
-		@:FB% %"S
-		    ^SC	
-		| @:FB%^EL%"S
-		    2R
-		    Q.P-."E
-			0U.M
-			0;
-		    '
-		' '
-		.U.N
-		Q.P,.:@FB%_%"F
-		    Q.P,.:X.N ^^^:@^U.N%%
-		|
-		    Q.NJ
-		'
-	    >
-	' '				! endIf				!
-    L .-Z;>				! Advance line, leave if none	!
->
-[.N					! Push result			!
-/
-
-! --------------------------------------------------------------------- !
-! * Load the object library listing into $N.				!
-!									!
-!	Executed from M$						!
-!		.I$ passed in from push-down list.			!
-!	Value returned in N$						!
-! --------------------------------------------------------------------- !
-
-@^UV/
-:].I"F					! Get input file, if not there	!
-    0^[^[				!   exit with error		!
-'					! endif not there		!
-
-@^U.V%^%
-:@ER%^EQ.I%"S
-    < :EY;
-    	<
-	    :X.V :@^U.V%^0^%
-    	L .-Z; >
-    >
-'
-
-[.V					! Push result			!
-/
-
-! --------------------------------------------------------------------- !
 ! *									!
 !									!
+! X$ is library listing file name (input)	!
+! Y$ is symbol vector file name (input/output)	!
+! N$ is new symbols from library listing	!
+! T$ is symbol table !
+! H$ contains SQLITE_API prefixed stuff from sqlite3.h header file !
+! !
+! -- keep moving everything into mainline...arch-specific is only macros!
+! A$ contains macro to generate Alpha/I64 symbol vector !
+! L$ contains macro to build symbol vector	!
+! R$ contains macro to load library listing	!
+! V$ contains macro to generate VAX vector	!
+!!
 ! --------------------------------------------------------------------- !
 
 :QZ"N					! If something given on command	!
-    HK GZ HX.O HK			!   then use it (put it in .O$)	!
+    HK GZ HXY HK			!   then use it (put it in .O$)	!
 '					! endif				!
-G.O 0J Z"N <@FS%^ES% %;>		! Clean up the buffer, if there	!
+GY 0J Z"N <@FS%^ES% %;>			! Clean up the buffer, if there	!
     0J 0A-32"E D '			!   strip leading spaces	!
     ZJ -1A-32"E -D '			!   and trailing spaces		!
     0J @:S%=%"S				!   search '=', if found	!
-	0,.+^SX.O			!     then store output in .O$	!
-	.,ZX.I				!     store input in .I$	!
+	0,.+^SXY			!     then store output in .O$	!
+	.,ZXX				!     store input in .I$	!
     '					!   end if found '='		!
 '					! endif buffer there		!
 
-:Q.I"N					! If there is input spec	!
-    @^A%Loading new symbols from "% :G.I @^A%"% 13^T 10^T
-    [.I ML :].L"S
-	:Q.O"N
-	    @^A%Symbol vector load from/store to "% :G.O @^A%"% 13^T 10^T
-	    [.O MV :].V"F
-		@^A%Can't load symbol vector% 13^T 2<10^T>
-	    '
-	'
-    |
-	@^A%Can't load new symbols% 13^T 2<10^T>
-    '
+! --------------------------------------------------------------------- !
+! Read in the library listing and convert to a ^ delimited list of	!
+! global symbols, all stored in N$.					!
+! --------------------------------------------------------------------- !
+@^A%...Reading symbol vector table from library listing...%
+HK					! Clear the buffer		!
+@^UN%%					! Clear input symbol list	!
+:@ER%^EQX%"F                            ! If could not open file then   !
+    @^A%Can't find file "% :G.I @^A%"...% 13^T 2<10^T>
+|					! endif could not open file	!
+    0U0					! Clear "in module"		!
+    < :EY;				! Yank in a page		!
+    	<
+	    ::@S%Module %"S		! If line starts Module		!
+	        -1U0			!   then set "in module"	!
+	    | Q0"S			! elseIf "in module"		!
+	    	<
+		    ::@S%^ES%		!   skip leading whitespace	!
+		    .U1			!   save start 			!
+		    @:FB% %"S		!   look for next sep, if found	!
+			.+^SU2		!     save end			!
+		    | @:FB%^EL%"S	!   elseIf at end of line	!
+			.-2U2		!     save end (minus eol)	!
+		    	Q1-Q2"E		!     If line is empty		!
+			    0U0		!       clear "in module"	!
+			    0;		!	leave the loop		!
+		    	'		!     endIf			!
+		    ' '			! endIf				!
+		    .UN
+		    Q1,Q2:XN ^^,:@^UN%%
+	    	>
+	    ' '				! endIf				!
+    	L .-Z;>				! Advance line, leave if none	!
+    >
+    HK					! clear text buffer		!
+    @^A%done...% 13^T 10^T
 '
 
-:Q.L"N
-    HK G.V
-    0U.P
-    <
-    	@^U.S%%
-    	<
-	    1%.PQ.LU0
-	    Q0-^^^"E 0;'
-	    Q0:@^U.S%%
-    	>
-        0J :@S%^Q^^EQ.S^Q^%"F
-	    ZJ G.S @I%^2^%
-	!
-	    ! Need to update the flag to 1 !
-    	'
-    :Q.L-(Q.P+1)"E 0;' >
-    HX.V HK				! Store updated vector in $.V	!
+! --------------------------------------------------------------------- !
+! Here we load all lines from the header file that describes the public	!
+! interface to SQLite3, sqlite3.h, and store it away in H$.  This is	!
+! used to verify the global symbols read from the library listing are	!
+! in fact public routines (and data cells).				!
+! --------------------------------------------------------------------- !
+:QN"N					! if lib listing loaded	then	!
+    @^A%...Loading public header file for comparison...%
+    @^UH%%				!   Clear header file buffer	!
+    :@ER%SRC_DIR:SQLITE3.H%"S		!   Open public, if success	!
+    	< :EY;				!     then Yank in a page	!
+	    < :@S%^ELSQLITE_API%;	!       grab SQLITE_API lines	!
+	    	:XH			!	  stick them in H$	!
+	    >				!	end loop		!
+    	>				!     end loop			!
+    	@^A%done...% 13^T 10^T		!     report			!
+    |					!   else			!
+	@^A%unable to open SRC_DIR:SQLITE3.H% 13^T 10^T
+    '					!   endif			!
+'					! endif				!
 
+! --------------------------------------------------------------------- !
+! Load the existing symbol table.  We use this to test for missing	!
+! entries (useful when building a new version of SQLite) as well as	!
+! retaining a record of the symbol table, so it can be updated without	!
+! losing compatability.							!
+! --------------------------------------------------------------------- !
+:QN+:QH"N
+    @^A%...Loading existing symbol vector table...%
+    HK					! Clear text buffer		!
+    :@ER%^EQY%"S			! If can open existing vector	!
+	:EY				!   then load it into buffer	!
+    '					! endif				!
+    0J					! reset .			!
+    @^A%done...% 13^T 10^T
+
+! --------------------------------------------------------------------- !
+! Using the public interface definitions, previous symbol vector table	!
+! and the new symbols from the object library listing, we construct an	!
+! udpated table.							!
+! --------------------------------------------------------------------- !
+    @^A%...Building new symbol vector table...%
+    0U.P <				! Init pointer			!
+	@^U.S%%
+	<
+	    Q.PQN:@^U.S%%
+	    %.PQN-^^,"E
+		%.P^[
+		0;
+	    '
+	>
+	0J :@S%^EQ.S,^ED,^EA^X^EL%"F	!   if no matching record	!
+	    HX2 .U2			!     store sym table		!
+	    HK GH			!     load public interface	!
+	    0J :@S%^EQ.S%U3 Q3"S	!     if public			!
+		::@S%^ES%^[		!       skip whitespace		!
+		0AU3			!       store next character	!
+	    '				!     end if			!
+	    HK G2 Q2J			!     restore sym table		!
+	    Q3"N			!     if public			!
+		ZJ G.S @I%,2,%		!       then new record		!
+	        Q3-^^("E		!       if function		!
+		    @I%P%		!	  set symbol type to P	!
+		|			!	else treat as data	!
+		    @I%D%		!         set symbol type to D	!
+		'			!	end if			!
+		13@I%% 10@I%%		!	terminate record	!
+	    '				!     end if			!
+	|				!   else			!
+	    -2@S%,% C 			!     backup to flag		!
+	    D @I%1%			!     set it to known		!
+    	'				!   end if			!
+    :QN-Q.P"E 0;' >
+    @^A%...done...% 13^T 10^T
+
+! --------------------------------------------------------------------- !
+! Now, examine the flags attached to the symbols to determine if there	!
+! have been any changes to the symbol vector table and reports them.	!
+! --------------------------------------------------------------------- !
+    @^A%...Checking for changes in symbol vector table...%
+    -1UT				! Symbol table unchanged...	!
+    HXT					! Store symbol table		!
+    0J
+    <
+	@^A%.%
+	@^U.S%%
+	< 0A:@^U.S%% C 0A-^^,"E 0;' >	! fetch name into .S$ !
+	@S%,% \U.S			! fetch flag !
+	-D @I%0%			!  clear flag !
+	Q.S-1"L				! if not found !
+	    @S%,% 0A-^^S"N		!   if not already aware of it !
+	        13^T 10^T @^A%   ...% :G.S @^A% is missing%
+		D @I%S%			!    change so we are !
+	        0UT			!    indicate a change !
+	    '				!   end if !
+	| Q.S-1"G			! else if new symbol !
+	    13^T 10^T @^A%   ...% :G.S @^A% is new%
+	    0UT				!    indicate a change !
+	' '				! end if !
+
+	L
+    .-Z; >
+    13^T 10^T
+    QT"F
+	@^A%...symbol table has changed%
+	:@EW%^EQY%"S
+	    HP EF
+	|
+	    @^A%Could not open % :GY @^A% for output% 13^T 10^T
+	'
+    |
+	@^A%...symbol table has not changed%
+    '
+    @^A%...done...% 13^T 10^T
+!
+
+Change the order of the flags...to name,flag,type
+this can be used to improve the code above...need to set that type to
+S if we find something that isn't there
+
+After we have written out the symbol vector...re-write the file with
+all flags to 0.
+
+only write out the symbol vector if there is a change...
+only write out the machine specific one if there is a change...
+
+MAKE_SYMBOL_VECTOR SRC_DIR:SYMBOL_VECTOR.TXT=ETC_DIR:SQLITE3.LIS SRC_DIR:SQLITE3_VECTOR.MAR
+
+!
+
+! need to update the table so everything is 0 again... 
+
+    then dump it out... !
+
+    @^A%...Generating VAX shareable image vector...%
+    HXT HK				! Save vector info		!
+    @I%
+	.TITLE	SQLITE3_SHR_VECTOR
+
+;
+; This is automatically generated by MAKE_SYMBOL_VECTOR. DO NOT EDIT!!!
+;
+
+	.MACRO	ROUTINE NAME
+	.EXTRN		NAME
+	.ALIGN	QUAD
+	.TRANSFER	NAME
+	.MASK		NAME
+	JMP		NAME+2
+	.ENDM
+
+	.PSECT	___SQLITE3_SHR_VECTOR -
+			PIC,USR,CON,REL,LCL,SHR,EXE,RD,NOWRT,QUAD
+
+%
+
+    @I%
+	.END
+%
+
+    @^A%done...% 13^T 10^T
+
+!	    @^A%New symbol % :G.S @^A% found...% 13^T 10^T!
+! Need to determine architecture !
+! Symbol table file should be P2...SYMBOL_TABLE.TXT=NEW.TXT SYMBOL_VECTOR.MAR!
+
+!    [.V MV!
     ! process to build vector...mention new symbols and gone symbols !
 '
 
