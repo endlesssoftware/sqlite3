@@ -12,7 +12,6 @@
 ! This file contains the linker options file for the VAX shareable
 ! image.
 !
-ETC_DIR:VERSION/OPT
 BIN_DIR:SQLITE3_VECTOR.OBJ
 BIN_DIR:SQLITE3.OLB/LIB
 GNU_CC_LIBRARY:LIBGCC/LIB
