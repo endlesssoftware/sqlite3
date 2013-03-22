@@ -1,12 +1,17 @@
-! Need to worry about the handling of linker options files
-! and generating $(ETCDIR)VERSION.OPT, as well as
 !
-! Look at MX and MMK as a guide...
+! 2013 March 9
 !
-! What about kit building?  Should we grab the PCSI/VMSINSTAL stuff from
-! MMK.  Maybe only PCSI...we're not targetting ancient systems...
+! The author disclaims copyright to this source code.  In place of
+! a legal notice, here is a blessing:
 !
-
+!    May you do good and not evil.
+!    May you find forgiveness for yourself and forgive others.
+!    May you share freely, never taking more than you give.
+!
+!***********************************************************************
+! Build description file for OpenVMS VAX, Alpha and I64 version of 
+! SQLite.
+!
 .IF "$(MMSARCH_NAME)" .EQ "Alpha"
 ARCH = AXP
 .ELSIF "$(MMSARCH_NAME)" .EQ "IA64"
