@@ -84,30 +84,31 @@ MD @I%! % G0 13@I%% 10@I%%
 !
 CASE_SENSITIVE=YES
 %
-
-@I%SYMBOL_VECTOR = (%
-0U.P <				! Init pointer			!
-    @^U.S%% @^U.A%%		! Init symbol and alias		!
-    <
-	Q.PQT:@^U.S%%
-	Q.PQT"V
-	    Q.PQT-^^ :@^U.A%%
-	|
-	    Q.PQT:@^U.A%%
-	'
-	%.PQT-^^,"E
-	    < %.PQT-10"E 0;' >
-	    %.P^[
-	    0;
-	'
-    >
-    @I%    % G.S @I%=PROCEDURE,-% 13@I%% 10@I%%
-    @I%    % G.A @I%/% G.S @I%=PROCEDURE,-% 13@I%% 10@I%%
+0U.P <					! Init pointer			!
+    @I%SYMBOL_VECTOR = (%
+    32 <
+    	@^U.S%% @^U.A%%			! Init symbol and alias		!
+    	<
+	    Q.PQT:@^U.S%%
+	    Q.PQT"V
+	    	Q.PQT-^^ :@^U.A%%
+	    |
+	    	Q.PQT:@^U.A%%
+	    '
+	    %.PQT-^^,"E
+	    	< %.PQT-10"E 0;' >
+	    	%.P^[
+	    	0;
+	    '
+    	>
+	@I%-% 13@I%% 10@I%%
+    	@I%    % G.S @I%=PROCEDURE,-% 13@I%% 10@I%%
+    	@I%    % G.A @I%/% G.S @I%=PROCEDURE,%
+    :QT-Q.P"E 0;' >
+    -D @I%)% 13@I%% 10@I%%
 :QT-Q.P"E 0;' >
-@I%)% 13@I%% 10@I%%
 
-@I%
-CASE_SENSITIVE=NO
+@I%CASE_SENSITIVE=NO
 %
 
 @EW%^EQZ/STM%
@@ -391,7 +392,7 @@ HK					! Clear the buffer		!
     @^A%...Determining architecture...%
     @EN%SYS$SYSTEM:VMB.EXE% :@EN%%"S
 	@^A%VAX system found...% 13^T 10^T
-	MA
+	MV
     | @EN%SYS$SYSTEM:APB.EXE% :@EN%%"S
 	@^A%Alpha system found...% 13^T 10^T
 	MA
