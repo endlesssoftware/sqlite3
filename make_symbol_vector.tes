@@ -242,28 +242,23 @@ HK					! Clear the buffer		!
 :@ER%^EQX%"F                            ! If could not open file then   !
     @^A%Can't find file "% :G.I @^A%"...% 13^T 2<10^T>
 |					! endif could not open file	!
-    0U0					! Clear "in module"		!
+    0U.F				! Clear "in module"		!
     < :EY;				! Yank in a page		!
     	<
 	    ::@S%Module %"S		! If line starts Module		!
-	        -1U0			!   then set "in module"	!
-	    | Q0"S			! elseIf "in module"		!
-	    	<
-		    ::@S%^ES%		!   skip leading whitespace	!
-		    .U1			!   save start 			!
-		    @:FB% %"S		!   look for next sep, if found	!
-			.+^SU2		!     save end			!
-		    | @:FB%^EL%"S	!   elseIf at end of line	!
-			.-2U2		!     save end (minus eol)	!
-		    	Q1-Q2"E		!     If line is empty		!
-			    0U0		!       clear "in module"	!
-			    0;		!	leave the loop		!
-		    	'		!     endIf			!
-		    ' '			! endIf				!
-		    .UN
-		    Q1,Q2:XN ^^,:@^UN%%
-	    	>
-	    ' '				! endIf				!
+		-1U.F
+	    | Q.F"S
+		::@S%^X^EL%"S
+		    ^SC
+		    0U.F
+		|
+		    <
+			< 0A-^^ "N 0;' C >
+			< 0A"C 0A:@^UN%% C | 0;' >
+			^^,:@^UN%%
+		    0A-13"E 0;' >
+		'
+	    ' '
     	L .-Z;>				! Advance line, leave if none	!
     >
     HK					! clear text buffer		!
