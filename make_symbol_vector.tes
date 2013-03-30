@@ -241,29 +241,29 @@ HK					! Clear the buffer		!
 @^UN%%					! Clear input symbol list	!
 :@ER%^EQX%"F                            ! If could not open file then   !
     @^A%Can't find file "% :G.I @^A%"...% 13^T 2<10^T>
-|					! else				!
-    0U.F				!   Clear "in module"		!
-    < :EY;				!   Yank in a page		!
-    	<				!     loop over lines		!
-	    ::@S%Module %"S		!       If line starts Module	!
-		-1U.F			!         set "in module"	!
-	    | Q.F"S			!       else if "in module"	!
-		::@S%^X^EL%"S		!         if line is blank	!
-		    ^SC			!	    backup . before eol	!
-		    0U.F		!           clear "in module"	!
-		|			!         else			!
-		    <			!           loop over line	!
-			< 0A-^^ "N 0;' C > !	      skip leading space!
-			< 0A"C 0A:@^UN%% C | 0;' > !  put symbol name,	!
-			^^,:@^UN%%	!             and ',' into N$	!
-		    0A-13"E 0;' >	!           leave if at line end!
-		'			!	  end if		!
-	    ' '				!       end if			!
-    	L .-Z;>				!     next line, leave if none	!
-    >					!   page loop			!
-    HK					!   clear text buffer		!
+|					! endif could not open file	!
+    0U.F				! Clear "in module"		!
+    < :EY;				! Yank in a page		!
+    	<
+	    ::@S%Module %"S		! If line starts Module		!
+		-1U.F
+	    | Q.F"S
+		::@S%^X^EL%"S
+		    ^SC
+		    0U.F
+		|
+		    <
+			< 0A-^^ "N 0;' C >
+			< 0A"C 0A:@^UN%% C | 0;' >
+			^^,:@^UN%%
+		    0A-13"E 0;' >
+		'
+	    ' '
+    	L .-Z;>				! Advance line, leave if none	!
+    >
+    HK					! clear text buffer		!
     @^A%done...% 13^T 10^T
-'					! end if			!
+'
 
 ! --------------------------------------------------------------------- !
 ! Here we load all lines from the header file that describes the public	!
