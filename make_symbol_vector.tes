@@ -341,7 +341,7 @@ HK					! Clear the buffer		!
     :@ER%SRC_DIR:SQLITE3.H%"S		!   Open public, if success	!
     	< :EY;				!     then Yank in a page	!
 	    < :@S%^ELSQLITE_API^ES%;	!       grab SQLITE_API lines	!
-		:@FB% sqlite3_%"S
+		:@FB%^Xsqlite3_%"S
 		    ^S+1C
 	    	    :XH			!	stick them in H$	!
 		'
