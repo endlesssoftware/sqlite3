@@ -50,12 +50,10 @@
 # include <rms.h>
 # include <smgdef.h>
 # include <stsdef.h>
-# if !defined(VAX)
-#  include <lib$routines.h>
-#  include <smg$routines.h>
-#  include <starlet.h>
-#  include <str$routines.h>
-# endif
+# include <lib$routines.h>
+# include <smg$routines.h>
+# include <starlet.h>
+# include <str$routines.h>
 #endif
 
 #ifdef HAVE_EDITLINE
@@ -66,7 +64,11 @@
 # include <readline/history.h>
 #endif
 #if !defined(HAVE_EDITLINE) && (!defined(HAVE_READLINE) || HAVE_READLINE!=1)
-# define readline(p) local_getline(p,stdin,0)
+# if defined(VMS)
+#  define readline(p) vms_getline(p,stdin,0)
+# else
+#  define readline(p) local_getline(p,stdin,0)
+# endif
 # define add_history(X)
 # define read_history(X)
 # define write_history(X)
@@ -365,7 +367,6 @@ static void shellstaticFunc(
 }
 
 
-#if !defined(VMS)
 /*
 ** This routine reads a line of text from FILE in, stores
 ** the text in memory obtained from malloc() and returns a pointer
@@ -417,8 +418,8 @@ static char *local_getline(char *zPrompt, FILE *in, int csvFlag){
   zLine = realloc( zLine, n+1 );
   return zLine;
 }
-#else
 
+#if defined(VMS)
 /*
 ** This routine reads a line of text from SYS$INPUT, stores
 ** the text in memory obtained from malloc() and returns a pointer
@@ -428,7 +429,7 @@ static char *local_getline(char *zPrompt, FILE *in, int csvFlag){
 ** This interface uses SMG to handle command line recall and command
 ** line editing.
 */
-static char *local_getline(char *zPrompt, FILE *in, int csvFlag){
+static char *vms_getline(char *zPrompt, FILE *in, int csvFlag){
 
   static int kb = 0;
   struct dsc$descriptor dPrompt;
@@ -470,8 +471,7 @@ static char *local_getline(char *zPrompt, FILE *in, int csvFlag){
 
   return zLine;
 }
-
-#endif /* !VMS */
+#endif /* VMS */
 
 /*
 ** Retrieve a single line of input text.
@@ -1713,7 +1713,6 @@ static int do_meta_command(char *zLine, struct callback_data *p){
       resolve_backslashes(azArg[nArg-1]);
     }
   }
-
   /* Process the input line.
   */
   if( nArg==0 ) return 0; /* no tokens, no error */
