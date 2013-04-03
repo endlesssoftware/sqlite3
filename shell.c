@@ -2915,7 +2915,7 @@ static int process_sqliterc(
     sqlite3_initialize();
     sqliterc = "SQLITERC";
   }
-  in = fopen(sqliterc,"rb", "dna=SYS$LOGIN:.DAT");
+  in = fopen(sqliterc,"r", "dna=SYS$LOGIN:.DAT");
 #endif /* !VMS */
   if( in ){
     if( stdin_is_interactive ){
@@ -3014,7 +3014,11 @@ int main(int argc, char **argv){
             sqlite3_sourceid(), SQLITE_SOURCE_ID);
     exit(1);
   }
+#if defined(VMS)
+  Argv0 = "sqlite3";
+#else
   Argv0 = argv[0];
+#endif
   main_init(&data);
   stdin_is_interactive = isatty(0);
 
