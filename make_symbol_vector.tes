@@ -227,9 +227,8 @@ HK					! clear buffer			!
     @I%.globl	_% G.U 13@I%% 10@I%%
     @I%_% G.U @I%:% 13@I%% 10@I%%
     @I%	.word	0xff% 13@I%% 10@I%%
-    @I%	jmp	% G.L 13@I%% 10@I%%
+    @I%	jmp	_% G.L @I%+2% 13@I%% 10@I%%
 :QT-Q.P"E 0;' >
-@I%	.END% 13@I%% 10@I%%
 
 :@EW%^EQ.A/STM%"S			! If open vector file		!
     HP					!   then dump out to file	!
