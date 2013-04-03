@@ -159,7 +159,7 @@ static void vmsMutexEnter(sqlite3_mutex *p){
 }
 
 static int vmsMutexTry(sqlite3_mutex *p){
-  if( pthread_mutex_trylock(&p->mutex)==0 ){
+  if( tis_mutex_trylock(&p->mutex)==0 ){
     return SQLITE_OK;
   }
 
