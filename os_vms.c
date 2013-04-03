@@ -25,7 +25,9 @@
 #include <jpidef.h>
 #include <lckdef.h>
 #include <libfisdef.h>
+#include <lib$routines.h>
 #include <lkidef.h>
+#include <mth$routines.h>
 #include <psldef.h>
 #include <rms.h>
 #include <sbkdef.h>
@@ -35,15 +37,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <str$routines.h>
 #include <stsdef.h>
 #include <time.h>
 #include <tis.h>
 #include <unistd.h>
-#ifndef vax
-# include <lib$routines.h>
-# include <mth$routines.h>
-# include <str$routines.h>
-#else
+#ifdef vax
+# include <sys$routines.h>
 # define FAT struct fatdef
 #endif
 
@@ -808,7 +808,7 @@ static int vmsAccess(
   static $DESCRIPTOR(class, "FILE");
 
   if( !username.dsc$a_pointer ){
-    int jpicod = JPI$_USERNAME;
+    long jpicod = JPI$_USERNAME;
 
     username.dsc$b_dtype = DSC$K_DTYPE_T;
     username.dsc$b_class = DSC$K_CLASS_D;
