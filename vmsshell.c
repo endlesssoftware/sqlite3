@@ -20,9 +20,11 @@
 #include <smg$routines.h>
 #include <ssdef.h>
 #include <starlet.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <str$routines.h>
 #include <stsdef.h>
+#include <unistd.h>
 #if defined(VAX)
 # include <sys$routines.h>
 #endif
@@ -30,9 +32,10 @@ extern char *local_getline(char *, FILE *, int);
 
 /* Private common SMG$ storage */
 static int kb = 0;
+static const int recall_size = 100;
 
 void vms_read_history(char *zHistory){
-  static const int recall_size = 100, flags = SMG$M_KEEP_CONTENTS;
+  const int flags = SMG$M_KEEP_CONTENTS;
   struct dsc$descriptor sLine = { 0, DSC$K_DTYPE_T, DSC$K_CLASS_S, 0};
   int i, status;
   FILE *in;
@@ -65,23 +68,23 @@ void vms_read_history(char *zHistory){
 
 void vms_write_history(char *zHistory){
   struct dsc$descriptor dLine = { 0, DSC$K_DTYPE_T, DSC$K_CLASS_D, 0};
-  int i, status;
+  int i, status = SS$_NORMAL;
   FILE *out;
 
-  out = fopen(zHistory,"a+","SYS$LOGIN:.DAT");
+  out = fopen(zHistory,"a+","dna=SYS$LOGIN:.DAT");
   if( out==0 ){
     fprintf(stderr, "-- Writing history file %s failed\n", zHistory);
     return;
   }
-  ftruncate(out, 0);
+  ftruncate(fileno(out), 0);
 
-  i = 1;
-  do{
+  for(i=1; i<=recall_size; i++){
     status = smg$return_input_line(&kb, &dLine, 0, &i);
-    if( $VMS_STATUS_SUCCESS(status) ){
-      fprintf(out, "%.*s\n", dLine.dsc$w_length, dLine.dsc$a_pointer);
+    if( !$VMS_STATUS_SUCCESS(status) || dLine.dsc$w_length==0 ){
+      break;
     }
-  }while( $VMS_STATUS_SUCCESS(status) );
+    fprintf(out, "%.*s\n", dLine.dsc$w_length, dLine.dsc$a_pointer);
+  }
 
   str$free1_dx(&dLine);
   fclose(out);
