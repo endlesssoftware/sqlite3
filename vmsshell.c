@@ -31,7 +31,7 @@ extern char *local_getline(char *, FILE *, int);
 /* Private common SMG$ storage */
 static int kb = 0;
 
-void vms_ready_history(char *zHistory){
+void vms_read_history(char *zHistory){
   static const int recall_size = 100, flags = SMG$M_KEEP_CONTENTS;
   struct dsc$descriptor sLine = { 0, DSC$K_DTYPE_T, DSC$K_CLASS_S, 0};
   int i, status;
