@@ -2867,7 +2867,7 @@ static int process_sqliterc(
     sqlite3_initialize();
     sqliterc = "SQLITE_INIT";
   }
-  in = fopen(sqliterc,"r", "dna=SYS$LOGIN:.DAT");
+  in = fopen(sqliterc,"r","dna=SYS$LOGIN:.DAT");
 #endif /* !VMS */
   if( in ){
     if( stdin_is_interactive ){
@@ -3198,7 +3198,9 @@ int main(int argc, char **argv){
         "Enter SQL statements terminated with a \";\"\n",
         sqlite3_libversion(), sqlite3_sourceid()
       );
-#if !defined(VMS)
+#if defined(VMS)
+      zHistory = strdup("SQLITE_HISTORY");
+#else
       zHome = find_home_dir();
       if( zHome ){
         nHistory = strlen30(zHome) + 20;
@@ -3206,8 +3208,6 @@ int main(int argc, char **argv){
           sqlite3_snprintf(nHistory, zHistory,"%s/.sqlite_history", zHome);
         }
       }
-#else
-      zHistory = strdup("SQLITE_HISTORY");
 #endif
 #if defined(HAVE_READLINE) && HAVE_READLINE==1 || defined(VMS)
       if( zHistory ) read_history(zHistory);
