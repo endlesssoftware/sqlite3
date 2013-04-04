@@ -980,8 +980,6 @@ static int vmsRandomness(
   float rval;
   int bcnt;
 
-  // use the CRTL random functions here...
-
   if( !seed ){
     unsigned int time[2];
 
