@@ -68,12 +68,12 @@ void vms_write_history(char *zHistory){
   int i, status;
   FILE *out;
 
-  out = fopen(zHistory,"a","SYS$LOGIN:.DAT");
+  out = fopen(zHistory,"a+","SYS$LOGIN:.DAT");
   if( out==0 ){
     fprintf(stderr, "-- Writing history file %s failed\n", zHistory);
     return;
   }
-  rewind(out);
+  ftruncate(out, 0);
 
   i = 1;
   do{
