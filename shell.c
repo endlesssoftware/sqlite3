@@ -65,13 +65,19 @@
 #endif
 #if !defined(HAVE_EDITLINE) && (!defined(HAVE_READLINE) || HAVE_READLINE!=1)
 # if defined(VMS)
-#  define readline(p) vms_getline(p,stdin,0)
+extern char *vms_readline(char *);
+extern void vms_read_history(char *);
+extern void vms_write_history(char *);
+#  define readline(p) vms_readline(p)
+#  define read_history(f) vms_read_history(f)
+#  define write_history(f) vms_write_history(f)
 # else
 #  define readline(p) local_getline(p,stdin,0)
+#  define read_history(X)
+#  define write_history(X)
+#  define stifle_history(X)
 # endif
 # define add_history(X)
-# define read_history(X)
-# define write_history(X)
 # define stifle_history(X)
 #endif
 
@@ -376,7 +382,7 @@ static void shellstaticFunc(
 ** The interface is like "readline" but no command-line editing
 ** is done.
 */
-static char *local_getline(char *zPrompt, FILE *in, int csvFlag){
+char *local_getline(char *zPrompt, FILE *in, int csvFlag){
   char *zLine;
   int nLine;
   int n;
@@ -418,60 +424,6 @@ static char *local_getline(char *zPrompt, FILE *in, int csvFlag){
   zLine = realloc( zLine, n+1 );
   return zLine;
 }
-
-#if defined(VMS)
-/*
-** This routine reads a line of text from SYS$INPUT, stores
-** the text in memory obtained from malloc() and returns a pointer
-** to the text.  NULL is returned at end of file, or if malloc()
-** fails.
-**
-** This interface uses SMG to handle command line recall and command
-** line editing.
-*/
-static char *vms_getline(char *zPrompt, FILE *in, int csvFlag){
-
-  static int kb = 0;
-  struct dsc$descriptor dPrompt;
-  struct dsc$descriptor dLine;
-  char *zLine = NULL;
-  int status;
-
-  if( !kb ){
-    status = smg$create_virtual_keyboard(&kb);
-    if( !$VMS_STATUS_SUCCESS( status ) ){
-      sys$exit(status);
-    }
-  }
-
-  dPrompt.dsc$b_dtype = DSC$K_DTYPE_T;
-  dPrompt.dsc$b_class = DSC$K_CLASS_S;
-  if( zPrompt && *zPrompt ){
-    dPrompt.dsc$w_length = strlen(zPrompt);
-    dPrompt.dsc$a_pointer = zPrompt;
-  }else{
-    dPrompt.dsc$w_length = 0;
-    dPrompt.dsc$a_pointer = 0;
-  }
-
-  dLine.dsc$w_length = 0;
-  dLine.dsc$b_dtype = DSC$K_DTYPE_T;
-  dLine.dsc$b_class = DSC$K_CLASS_D;
-  dLine.dsc$a_pointer = 0;
-
-  status = smg$read_composed_line(&kb,0,&dLine,&dPrompt);
-  if( $VMS_STATUS_SUCCESS( status ) ){
-    zLine = malloc(dLine.dsc$w_length + 1);
-    if( zLine ){
-      memcpy(zLine,dLine.dsc$a_pointer,dLine.dsc$w_length);
-      zLine[dLine.dsc$w_length] = '\0';
-    }
-    str$free1_dx(&dLine);
-  }
-
-  return zLine;
-}
-#endif /* VMS */
 
 /*
 ** Retrieve a single line of input text.
@@ -3254,8 +3206,10 @@ int main(int argc, char **argv){
           sqlite3_snprintf(nHistory, zHistory,"%s/.sqlite_history", zHome);
         }
       }
+#else
+      zHistory = strdup("SQLITE_HISTORY");
 #endif
-#if defined(HAVE_READLINE) && HAVE_READLINE==1
+#if defined(HAVE_READLINE) && HAVE_READLINE==1 || defined(VMS)
       if( zHistory ) read_history(zHistory);
 #endif
       rc = process_input(&data, 0);
