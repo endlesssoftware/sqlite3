@@ -389,14 +389,9 @@ static int vmsTruncate(
   fibdsc.dsc$w_length = sizeof(fib);
   fibdsc.dsc$a_pointer = (char *)&fib;
 
-  status = sys$qiow(EFN$C_ENF, pFile->chan, IO$_MODIFY, iosb, 0, 0,
-                    &fibdsc, 0, 0, 0, 0, 0);
-  if ( $VMS_STATUS_SUCCESS(status)
-      && $VMS_STATUS_SUCCESS(iosb[0]) ){
-    return SQLITE_OK;
-  }
-
-  return SQLITE_IOERR_TRUNCATE;
+  sys$qiow(EFN$C_ENF, pFile->chan, IO$_MODIFY, iosb, 0, 0, &fibdsc,
+      0, 0, 0, 0, 0);
+  return SQLITE_OK;
 }
 
 /*
