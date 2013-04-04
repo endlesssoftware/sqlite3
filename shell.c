@@ -2865,7 +2865,7 @@ static int process_sqliterc(
 #else
   if (sqliterc == 0) {
     sqlite3_initialize();
-    sqliterc = "SQLITERC";
+    sqliterc = "SQLITE_INIT";
   }
   in = fopen(sqliterc,"r", "dna=SYS$LOGIN:.DAT");
 #endif /* !VMS */
