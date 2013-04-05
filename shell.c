@@ -2848,7 +2848,18 @@ static int process_sqliterc(
   FILE *in = NULL;
   int rc = 0;
 
-#if !defined(VMS)
+#if defined(VMS)
+  /* When we open the initialization file, only supply the default file
+  ** spec. if the name did not come from "-init".
+  */
+  if (sqliterc == 0) {
+    sqlite3_initialize();
+    sqliterc = "SQLITE_INIT";
+    in = fopen(sqliterc,"r","dna=SYS$LOGIN:.DAT");
+  } else {
+    in = fopen(sqliterc,"r");
+  }
+#else
   if (sqliterc == NULL) {
     home_dir = find_home_dir();
     if( home_dir==0 ){
@@ -2862,13 +2873,7 @@ static int process_sqliterc(
     sqliterc = zBuf;
   }
   in = fopen(sqliterc,"rb");
-#else
-  if (sqliterc == 0) {
-    sqlite3_initialize();
-    sqliterc = "SQLITE_INIT";
-  }
-  in = fopen(sqliterc,"r","dna=SYS$LOGIN:.DAT");
-#endif /* !VMS */
+#endif /* VMS */
   if( in ){
     if( stdin_is_interactive ){
       fprintf(stderr,"-- Loading resources from %s\n",sqliterc);
