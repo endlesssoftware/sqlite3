@@ -54,6 +54,7 @@
 # include <smg$routines.h>
 # include <starlet.h>
 # include <str$routines.h>
+extern int vms_getname(char **, struct FAB *, struct RAB *);
 #endif
 
 #ifdef HAVE_EDITLINE
@@ -2854,8 +2855,9 @@ static int process_sqliterc(
   */
   if (sqliterc == 0) {
     sqlite3_initialize();
-    sqliterc = "SQLITE_INIT";
-    in = fopen(sqliterc,"r","dna=SYS$LOGIN:.DAT");
+    in = fopen("SQLITE_INIT","r","dna=SYS$LOGIN:.DAT",
+	"acc",vms_getname,&zBuf);
+    sqliterc = zBuf;
   } else {
     in = fopen(sqliterc,"r");
   }

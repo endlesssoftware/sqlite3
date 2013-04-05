@@ -16,6 +16,7 @@
 #include "sqliteInt.h"
 #if SQLITE_OS_VMS               /* This file is used for OpenVMS only */
 #include <descrip.h>
+#include <rms.h>
 #include <smgdef.h>
 #include <smg$routines.h>
 #include <ssdef.h>
@@ -34,6 +35,17 @@ extern char *local_getline(char *, FILE *, int);
 static int kb = 0;
 static const int recall_size = 100;
 
+int vms_getname(char **zBuf, struct FAB *fab, struct RAB *rab){
+  *zBuf = calloc(1, NAM$C_MAXRSS+1);
+  if( *zBuf!=0 ){
+    fab->fab$l_nam->nam$l_rsa = *zBuf;
+    fab->fab$l_nam->nam$b_rss = NAM$C_MAXRSS;
+    fab->fab$l_nam->nam$l_esa = *zBuf;
+    fab->fab$l_nam->nam$b_ess = NAM$C_MAXRSS;
+  }
+
+  return 0;
+}
 void vms_read_history(char *zHistory){
   const int flags = SMG$M_KEEP_CONTENTS;
   struct dsc$descriptor sLine = { 0, DSC$K_DTYPE_T, DSC$K_CLASS_S, 0};
@@ -69,25 +81,27 @@ void vms_read_history(char *zHistory){
 void vms_write_history(char *zHistory){
   struct dsc$descriptor dLine = { 0, DSC$K_DTYPE_T, DSC$K_CLASS_D, 0};
   int i, status = SS$_NORMAL;
+  char *zResultant = 0;
   FILE *out;
 
-  out = fopen(zHistory,"a+","dna=SYS$LOGIN:.DAT");
+  out = fopen(zHistory,"a+","dna=SYS$LOGIN:.DAT","acc",vms_getname,&zResultant);
   if( out==0 ){
-    fprintf(stderr, "-- Writing history file %s failed\n", zHistory);
-    return;
-  }
-  ftruncate(fileno(out), 0);
+    fprintf(stderr, "-- Writing history file %s failed\n", zResultant);
+  } else {
+    ftruncate(fileno(out), 0);
 
-  for(i=1; i<=recall_size; i++){
-    status = smg$return_input_line(&kb, &dLine, 0, &i);
-    if( !$VMS_STATUS_SUCCESS(status) || dLine.dsc$w_length==0 ){
-      break;
+    for(i=1; i<=recall_size; i++){
+      status = smg$return_input_line(&kb, &dLine, 0, &i);
+      if( !$VMS_STATUS_SUCCESS(status) || dLine.dsc$w_length==0 ){
+        break;
+      }
+      fprintf(out, "%.*s\n", dLine.dsc$w_length, dLine.dsc$a_pointer);
     }
-    fprintf(out, "%.*s\n", dLine.dsc$w_length, dLine.dsc$a_pointer);
-  }
 
-  str$free1_dx(&dLine);
-  fclose(out);
+    str$free1_dx(&dLine);
+    fclose(out);
+  }
+  if( zResultant!=0 ) free(zResultant);
 }
 
 /*
