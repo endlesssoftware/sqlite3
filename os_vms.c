@@ -703,29 +703,32 @@ static int vmsOpen(
   pFile->fab.fab$b_rtv = 255;
   pFile->fab.fab$v_cbt = 1;
 
-  if( !zFilename ){
+  if( !zFilename || !*zFilename ){
+    pFile->fab.fab$v_put = 1;
     pFile->fab.fab$v_tmd = 1;
+    pFile->fab.fab$v_upd = 1;
+
+    status = sys$create(&pFile->fab);
   }else{
     if( flags & SQLITE_OPEN_DELETEONCLOSE ){
       pFile->fab.fab$v_dlt = 1;
     }
-  }
 
-  if( flags & SQLITE_OPEN_READONLY ){
-    pFile->fab.fab$v_get = 1;
-  } else {
-    pFile->fab.fab$v_put = 1;
-    pFile->fab.fab$v_upd = 1;
-  }
+    if( flags & SQLITE_OPEN_READONLY ){
+      pFile->fab.fab$v_get = 1;
+    }else{
+      pFile->fab.fab$v_put = 1;
+      pFile->fab.fab$v_upd = 1;
+    }
 
-  if( flags & SQLITE_OPEN_EXCLUSIVE ){
-    status = sys$create(&pFile->fab);
-  }else if( flags & SQLITE_OPEN_CREATE ){
-    pFile->fab.fab$v_cif = 1;
-
-    status = sys$create(&pFile->fab);
-  }else{
-    status = sys$open(&pFile->fab);
+    if( flags & SQLITE_OPEN_EXCLUSIVE ){
+      status = sys$create(&pFile->fab);
+    }else if( flags & SQLITE_OPEN_CREATE ){
+      pFile->fab.fab$v_cif = 1;
+      status = sys$create(&pFile->fab);
+    }else{
+      status = sys$open(&pFile->fab);
+    }
   }
 
   if( $VMS_STATUS_SUCCESS(status) ){
