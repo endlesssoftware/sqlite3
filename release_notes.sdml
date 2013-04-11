@@ -97,3 +97,10 @@ Describe the shared memory mechanism and hwo that all hangs together.
 <HEAD1>(New Features and Changes in SQLite3 V7.
 
 ...nothing here as this is a new manual...
+
+<HEAD1>(Known Restrictions>
+<P>The following section details known restrictions to the 
+
+-- related to creating temporary files, with out names...
+
+NFS and identified with the  VACUUM command....
