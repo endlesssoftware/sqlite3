@@ -1,5 +1,5 @@
 !									!
-! 2013 March 10								!
+! 2013 April 17								!
 !									!
 ! The author disclaims copyright to this source code.  In place of	!
 ! a legal notice, here is a blessing:					!
@@ -9,12 +9,8 @@
 !    May you share freely, never taking more than you give.		!
 !									!
 !***********************************************************************!
-!	This module contains the code that builds the symbol vector	!
-!  for SQLite3.  It does this by reading in an existing symbol table,	!
-!  then the symbols defined in the object library.  Any new symbols are !
-!  tacked on the end and the new symbol vector is saved.  If any symbols!
-!  are not present in the object library that are listed in the symbol  !
-!  vectore, are warning is issued.					!
+!	This module generates a VAX-specific transfer vector for the	!
+! SQLite 3 shareable image.						!
 !									!
 
 @^A%MAKE_SYMBOL_VECTOR  V1.0%	! Identify myself...			!
