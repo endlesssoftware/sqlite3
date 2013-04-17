@@ -13,7 +13,7 @@
 ! SQLite 3 shareable image.						!
 !									!
 
-@^A%MAKE_SYMBOL_VECTOR  V1.0%	! Identify myself...			!
+@^A%MAKE_VAX_VECTOR  V1.0%	! Identify myself...			!
 13^T 10^T
 
 0J Z"N <@FS%^ES% %;>		! Clean up the buffer, if it's there	!
