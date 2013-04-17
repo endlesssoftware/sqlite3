@@ -97,8 +97,7 @@ GZ                                      ! Dump command line into buffer !
     ZJ -1A-32"E -D '                    !   and trailing spaces         !
     0J
     < 0A:@^UY%% C 0A-^^="E C0;' >
-    < 0A:@^UX%% C 0A-^^ "E C0;' >
-    .,ZXZ
+    .,ZXX
 '
  
 @^A%...Loading existing symbol vector table...%
@@ -165,7 +164,14 @@ CASE_SENSITIVE=YES
 
     @I%CASE_SENSITIVE=NO
 %
-    @^A%done...%
+
+    :@EW%^EQY/STM%"S                    ! If open vector file           !
+        HP                              !   then dump out to file	!
+        EF                              !   close vector file		!
+        @^A%done...% 13^T 10^T
+    |                                   ! else                          !
+        @^A%Could not open vector file % :GY 13^T 10^T
+    '                                   ! end if                        !
 '
 
 ! --------------------------------------------------------------------- !
