@@ -142,22 +142,23 @@ CASE_SENSITIVE=YES
 	    	    Q.PQT:@^U.U%%
 	        '
 	        %.PQT-^^,"E
+		    @I%-% 13@I%% 10@I%%
 		    3%.P^[
 		    Q.PQT-^^S"E
-		        @^U.T%SPARE%
+			@I%    SPARE,- ! % G.L 13@I%% 10@I%%
+			@I%    SPARE,%
 		    | Q.PQT-^^D"E
-		        @^U.T%DATA%
+			@I%    % G.L @I%=DATA,-% 13@I%% 10@I%%
+			@I%    % G.U @I%/% G.L @I%=DATA,%
 		    |
-		        @^U.T%PROCEDURE%
+			@I%    % G.L @I%=PROCEDURE,-% 13@I%% 10@I%%
+			@I%    % G.U @I%/% G.L @I%=PROCEDURE,%
 		    ' '
 	    	    < %.PQT-10"E 0;' >
 	    	    %.P^[
 	    	    0;
 	        '
     	    >
-	    @I%-% 13@I%% 10@I%%
-    	    @I%    % G.L @I%=% G.T @I%,-% 13@I%% 10@I%%
-    	    @I%    % G.U @I%/% G.L @I%=% G.T @I%,%
         :QT-Q.P"E 0;' >
         -D @I%)% 13@I%% 10@I%%
     :QT-Q.P"E 0;' >
