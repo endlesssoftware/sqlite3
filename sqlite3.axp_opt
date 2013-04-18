@@ -1,5 +1,5 @@
 !
-! 2013 April 1
+! 2013 April 18
 !
 ! The author disclaims copyright to this source code.  In place of
 ! a legal notice, here is a blessing:
@@ -9,7 +9,7 @@
 !    May you share freely, never taking more than you give.
 !
 !***********************************************************************
-! This file contains the linker options file for the I64 command line
+! This file contains the linker options file for the Alpha command line
 ! utility.
 !
 BIN_DIR:SHELL.OBJ
