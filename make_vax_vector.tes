@@ -134,12 +134,19 @@ GZ                                      ! Dump command line into buffer !
 
 	.TITLE	SQLITE3_VECTOR
 
-	.MACRO	ROUTINE NAME
+	.MACRO	ROUTINE	NAME
 	.EXTRN		NAME
 	.ALIGN	QUAD
 	.TRANSFER	NAME
 	.MASK		NAME
 	JMP		NAME+2
+	.ENDM
+
+	.MACRO	SPARE	?L1
+	.EXTRN		LIB$NOT_IMPLEMENTED
+	.ALIGN		QUAD
+	BSBB		L1
+L1:	JMP		LIB$NOT_IMPLEMENTED
 	.ENDM
 
 	.PSECT	___SQLITE3_VECTOR -
@@ -152,12 +159,17 @@ GZ                                      ! Dump command line into buffer !
         <
 	    Q.PQT:@^U.S%%
 	    %.PQT-^^,"E
+		3%.P^[
+		Q.PQT-^^S"E
+		    @I%	SPARE ;% G.S 13@I%% 10@I%%
+		| Q.PQT-^^P"E
+		    @I%	ROUTINE		% G.S 13@I%% 10@I%%
+		' '
 	        < %.PQT-10"E 0;' >
 	        %.P^[
 	        0;
 	    '
         >
-        @I%	ROUTINE		% G.S 13@I%% 10@I%%
     :QT-Q.P"E 0;' >
 
     @I%
@@ -188,6 +200,16 @@ GZ                                      ! Dump command line into buffer !
 #
 	.text
 	.align 8
+
+	.macro	routine	uc,lc
+	.align		8
+	.extern		_\lc
+	.global		_\uc
+_\uc:
+	.word		0xff
+	jmp		_\lc+2
+	.endm
+
 %
     0U.P <					! Init pointer			!
         @^U.L%% @^U.U%%			! Init symbol and alias		!
@@ -199,17 +221,18 @@ GZ                                      ! Dump command line into buffer !
 	        Q.PQT:@^U.U%%
 	    '
 	    %.PQT-^^,"E
+		3%.P^[
+		Q.PQT-^^P"E
+		    @I%	routine		% G.U @I%,% G.L 13@I%% 10@I%%
+		'
 	        < %.PQT-10"E 0;' >
 	        %.P^[
 	        0;
 	    '
         >
-
-        @I%.globl	_% G.U 13@I%% 10@I%%
-        @I%_% G.U @I%:% 13@I%% 10@I%%
-        @I%	.word	0xff% 13@I%% 10@I%%
-        @I%	jmp	_% G.L @I%+2% 13@I%% 10@I%%
     :QT-Q.P"E 0;' >
+    @I%	.end
+%
 
     :@EW%^EQZ/STM%"S			! If open vector file		!
         HP				!   then dump out to file	!
