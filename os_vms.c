@@ -1032,10 +1032,10 @@ static int vmsCurrentTimeInt64(
   sqlite3_int64 *piNow
 ){
   static const sqlite3_int64 vmsEpoch = (sqlite3_int64)207360043200000;
-  sqlite3_int64 t[2];
+  sqlite3_int64 t;
 
-  sys$getutc(&t);
-  *piNow = vmsEpoch + (t[0] / 10000);
+  sys$gettim(&t);
+  *piNow = vmsEpoch + (t / 10000);
   return 0;
 }
 
