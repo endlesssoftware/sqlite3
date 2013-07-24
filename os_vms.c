@@ -1031,11 +1031,11 @@ static int vmsCurrentTimeInt64(
   sqlite3_vfs *pVfs,        /* VFS record */
   sqlite3_int64 *piNow
 ){
-  static const sqlite3_int64 vmsEpoch = (sqlite3_int64)207360043200000;
-  sqlite3_int64 t;
+  static const sqlite3_int64 utcEpoch = (sqlite3_int64)198647467200000;
+  sqlite3_int64 t[2];
 
-  sys$gettim(&t);
-  *piNow = vmsEpoch + (t / 10000);
+  sys$getutc(t);
+  *piNow = utcEpoch + (t[0] / 10000);
   return 0;
 }
 
