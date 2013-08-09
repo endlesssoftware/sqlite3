@@ -9,7 +9,7 @@
 !    May you share freely, never taking more than you give.
 !
 !***********************************************************************
-! This file contains the linker options file for the Itanium shareable
+! This file contains the linker options file for the Alpha shareable
 ! image.
 !
 GSMATCH=LEQUAL,8,0
