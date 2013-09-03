@@ -55,6 +55,14 @@
 # include <starlet.h>
 # include <str$routines.h>
 extern int vms_getname(char **, struct FAB *, struct RAB *);
+# ifdef vax
+   /*
+   ** On VAX we use the GCC compiler (for 64-bit support) and linking against
+   ** the DEC C RTL produces multiply-defined symbols which requires this
+   ** little work-around here strdup is not actually called.
+   */
+#  define strdup(s) strcpy(malloc(sizeof((s))), (s))
+# endif
 #endif
 
 #ifdef HAVE_EDITLINE
