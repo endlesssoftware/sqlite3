@@ -1,0 +1,106 @@
+<COMMENT>
+
+ 2013 March 31
+
+ The author disclaims copyright to this source code.  In place of
+ a legal notice, here is a blessing:
+
+    May you do good and not evil.
+    May you find forgiveness for yourself and forgive others.
+    May you share freely, never taking more than you give.
+
+************************************************************************
+ This is the OpenVMS-specific user guide and release notes documentation.
+
+<ENDCOMMENT>
+<INCLUDE>(ETC_DIR:DYNAMIC_SYMBOLS.SDML)
+<FRONT_MATTER>
+<TITLE_PAGE>
+<TITLE>(SQLite3 for OpenVMS User's Guide and Release Notes)
+<ABSTRACT>(<REFERENCE>(RELMONTH))
+<P>
+This document contains the release notes and user's guide for
+SQLite3 for OpenVMS.  It describes any OpenVMS-specific features,
+restrictions, changes or additions made to SQLite3 in this release.  It
+also describes how to install and use the SQLite3 utilities and run-time
+library.
+<ENDABSTRACT>
+<REVISION_INFO>(This is a new manual.)
+<REVISION_INFO>(Operating System and Version:\OpenVMS VAX V7.3 or later)
+<REVISION_INFO>(\OpenVMS Alpha V7.3 or later)
+<REVISION_INFO>(\OpenVMS I64 V8.2 or later)
+<REVISION_INFO>(Software Version:\SQLite3 <REFERENCE(VER))
+<ENDTITLE_PAGE>(Endless Software Solutions<LINE>Perth, Western Australia)
+<COPYRIGHT_PAGE>
+<PRINT_DATE>(<REFERENCE>(PRTDATE))
+<COPYRIGHT_DATE>(<REFERENCE>(CPYDATE))
+<P>
+The author disclaims copyright to this source code.  In place of
+a legal notice, here is a blessing:
+
+<LIST>(UNNUMBERED)
+<LE>May you do good and not evil.
+<LE>May you find forgiveness for yourself and forgive others.
+<LE>May you share freely, never taking more than you give.
+<ENDLIST>
+<ENDCOPYRIGHT_PAGE>
+<CONTENTS_FILE>
+<ENDFRONT_MATTER>
+
+<CHAPTER>(Installation Guide\install)
+
+<HEAD1>(Installation)
+
+<P>Only comes in a PCSI kit...no VMSINSTAL.
+
+<HEAD1>(Post-Installation Tasks)
+
+<CHAPTER>(User's Guide)
+
+<HEAD1>(Version Numbering)
+<P>Describe how it works and were to get version information from...
+
+<HEAD1>(Client Utility)
+
+<HEAD2>(History File)
+
+If you don't want it then define SQLITE_HISTORY to NLA0: or
+SYS$LOGIN:SQLITE_HISTORY.DAT by default.
+
+<HEAD2>(Initialization file)
+
+<P>Define SQLITE_INIT to ... otherwise SYS$LOGIN:SQLITE_INIT.DAT is init file.
+
+<HEAD1>(Linking)
+
+<HEAD1>(Thread Safety)
+
+<P>
+Describe how we use the tis interface and that you enable by linking with
+the pthread RTL and using the right calls to switch it on.
+
+<HEAD1>(Locking)
+
+<P>
+Describe cluster locking mechanism.  For this reason we have to install the
+RTL with SYSLCK privs.
+
+<HEAD1>(Shared Memory)
+<P>
+Describe the shared memory mechanism and hwo that all hangs together.
+
+<HEAD1>(API Reference)
+<p>include links back to SQLite3 website and it's documentation, etc...
+
+<CHAPTER>(Release Notes\relnote)
+
+<HEAD1>(New Features and Changes in SQLite3 V7.
+
+...nothing here as this is a new manual...
+
+<HEAD1>(Known Restrictions>
+<P>The following section details known restrictions to the 
+
+-- related to creating temporary files, with out names...
+
+NFS and identified with the  VACUUM command....

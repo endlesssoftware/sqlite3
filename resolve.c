@@ -259,6 +259,7 @@ static int lookupName(
         Table *pTab;
         Column *pCol;
   
+
         pTab = pItem->pTab;
         assert( pTab!=0 && pTab->zName!=0 );
         assert( pTab->nCol>0 );

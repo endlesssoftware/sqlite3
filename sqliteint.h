@@ -204,9 +204,11 @@
 **
 ** See also ticket #2741.
 */
-#if !defined(_XOPEN_SOURCE) && !defined(__DARWIN__) \
- && !defined(__APPLE__) && SQLITE_THREADSAFE
-#  define _XOPEN_SOURCE 500  /* Needed to enable pthread recursive mutexes */
+#if !defined(VMS)
+#  if !defined(_XOPEN_SOURCE) && !defined(__DARWIN__) \
+    && !defined(__APPLE__) && SQLITE_THREADSAFE
+#    define _XOPEN_SOURCE 500  /* Needed to enable pthread recursive mutexes */
+#  endif
 #endif
 
 /*

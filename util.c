@@ -398,7 +398,7 @@ do_atof_calc:
         if( esign<0 ){
           result = 0.0*s;
         }else{
-          result = 1e308*1e308*s;  /* Infinity */
+          result = 1e308L*1e308L*s;  /* Infinity */
         }
       }else{
         /* 1.0e+22 is the largest power of 10 than can be 
