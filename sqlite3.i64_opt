@@ -1,0 +1,17 @@
+!
+! 2013 April 1
+!
+! The author disclaims copyright to this source code.  In place of
+! a legal notice, here is a blessing:
+!
+!    May you do good and not evil.
+!    May you find forgiveness for yourself and forgive others.
+!    May you share freely, never taking more than you give.
+!
+!***********************************************************************
+! This file contains the linker options file for the I64 command line
+! utility.
+!
+BIN_DIR:SHELL.OBJ
+BIN_DIR:VMSSHELL.OBJ
+SQLITE3_SHR/SHARE

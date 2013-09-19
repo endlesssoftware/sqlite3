@@ -1,0 +1,40 @@
+!
+! 2013 March 9
+!
+! The author disclaims copyright to this source code.  In place of
+! a legal notice, here is a blessing:
+!
+!    May you do good and not evil.
+!    May you find forgiveness for yourself and forgive others.
+!    May you share freely, never taking more than you give.
+!
+!***********************************************************************
+! This file contains the linker options file for the VAX shareable
+! image.
+!
+GSMATCH=LEQUAL,8,0
+
+CASE_SENSITIVE=YES
+
+CLUSTER=___SQLITE3_VECTOR,,,BIN_DIR:SQLITE3_VECTOR.OBJ
+CLUSTER=CLUSTER1
+COLLECT=CLUSTER1,$CODE$,$CODE,$code
+
+!
+! These PSECT definitions are here to counter-act the fact
+! that GCC insists on marking these WRT,SHR.  This ensures
+! we don't create a shareable image that must be INSTALL'd
+! /WRITE.
+!
+PSECT_ATTR=sqlite3Config,NOSHR,WRT,NOEXE,RD,NOVEC
+PSECT_ATTR=sqlite3GlobalFunctions,NOSHR,WRT,NOEXE,RD,NOVEC
+PSECT_ATTR=sqlite3PendingByte,NOSHR,WRT,NOEXE,RD,NOVEC
+PSECT_ATTR=sqlite3_data_directory,NOSHR,WRT,NOEXE,RD,NOVEC
+PSECT_ATTR=sqlite3_temp_directory,NOSHR,WRT,NOEXE,RD,NOVEC
+
+CASE_SENSITIVE=NO
+
+BIN_DIR:SQLITE3_ALIASES.OBJ
+BIN_DIR:SQLITE3.OLB/LIB
+GNU_CC_LIBRARY:LIBGCC/LIB
+SYS$LIBRARY:VAXC2DECC/SHARE

@@ -1,0 +1,27 @@
+!***********************************************************************!
+MAKE_SYMBOL_VECTOR  V2.013100JZ"N<FS^ES ;>0J0A-32"ED'ZJ-1A-32"E
+-D''HXZHK[SUS[SEDUS[SEHUS[SESUS[SEVUS[SETUS[SEUUS[S00ED2EH0ES0EV
+2#16#128#512#8192ET-1EUEI
+!!GZ0JZ"N<FS^ES ;>XYZ0J0A-32"ED'ZJ-1A-32"E-D'0J<0A:YC0A-="E
+C0;'>.,ZXX'...Reading symbol vector table from library listing...HK
+N:ER^EQX"FCan't find file ":G.I"...132<10>|0U.F<:EY;<
+::SModule "S-1U.F|Q.F"S::S^X^EL"SC0U.F|<<0A- "N0;'C><0A"C0A:NC|
+0;'>,:N0A-13"E0;'>'''L.-Z;>>HKdone...1310':QN"N
+...Loading public header file for comparison...H 
+:ERSRC_DIR:SQLITE3.H"S<:EY;<:S^ELSQLITE_API^ES;:FB^Xsqlite3_"S+1C
+:XH'>>sorting...HKGH0J<0U.F0J<0LX.A7U.AL.-Z"E0;'8C:Q.A-(Q.A+1)<
+%.AQ.A"C(Q.AQ.A#32)-(0A#32)"L0;|(Q.AQ.A#32)-(0A#32)"G-1U.F0LX.AK-LG.A
+0;|C''|0;'>>Q.F;>HXHdone...1310|unable to open SRC_DIR:SQLITE3.H
+1310'':QN+:QH"N...Loading existing symbol vector table...HK
+:ER^EQY"S:EY'0Jdone...1310
+...Building new symbol vector table...0U.P<.S<Q.PQN:.S%.PQN-,"E
+%.P0;'>0J:S^EQ.S,^ED,^EA^X^EL"FHX2.U2HKGH0J:S^EQ.SU3Q3"S::S^ES  
+0AU3'HKG2Q2JQ3"NZJG.SI,2,Q3-("EIP|ID'13I10I'|-2S,CDI1'
+:QN-Q.P"E0;'>...done...1310
+...Checking for changes in symbol vector table...-1UTHXT0J<..S<
+0A:.SC0A-,"E0;'>S,\U.S-DI0Q.S-1"LS,0A-S"N1310   ...:G.S
+ is missingDIS0UT'|Q.S-1"G1310   ...:G.S is new0UT''L.-Z;>13
+10QT"F...symbol table has changed:EW^EQY/STM"SHPEF|
+Could not open :GY for output1310'|
+...symbol table has not changed'...done...1310'
+]SQSEU]SQSET]SQSEV]SQSES]SQSEH]SQSED]SQS]S
