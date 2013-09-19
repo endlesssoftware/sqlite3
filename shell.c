@@ -2933,11 +2933,7 @@ static int process_sqliterc(
     rc = process_input(p,in);
     fclose(in);
   }
-<<<<<<< HEAD
-  sqlite3_free(zBuf);
-=======
   if (zBuf != 0) sqlite3_free(zBuf);
->>>>>>> master
   return rc;
 }
 
@@ -3027,15 +3023,11 @@ int main(int argc, char **argv){
             sqlite3_sourceid(), SQLITE_SOURCE_ID);
     exit(1);
   }
-<<<<<<< HEAD
-  Argv0 = argv[0];
-=======
 #if defined(VMS)
   Argv0 = "sqlite3";
 #else
   Argv0 = argv[0];
 #endif
->>>>>>> master
   main_init(&data);
   stdin_is_interactive = isatty(0);
 
@@ -3263,12 +3255,9 @@ int main(int argc, char **argv){
         "Enter SQL statements terminated with a \";\"\n",
         sqlite3_libversion(), sqlite3_sourceid()
       );
-<<<<<<< HEAD
-=======
 #if defined(VMS)
       zHistory = strdup("SQLITE_HISTORY");
 #else
->>>>>>> master
       zHome = find_home_dir();
       if( zHome ){
         nHistory = strlen30(zHome) + 20;
@@ -3276,12 +3265,8 @@ int main(int argc, char **argv){
           sqlite3_snprintf(nHistory, zHistory,"%s/.sqlite_history", zHome);
         }
       }
-<<<<<<< HEAD
-#if defined(HAVE_READLINE) && HAVE_READLINE==1
-=======
 #endif
 #if defined(HAVE_READLINE) && HAVE_READLINE==1 || defined(VMS)
->>>>>>> master
       if( zHistory ) read_history(zHistory);
 #endif
       rc = process_input(&data, 0);
