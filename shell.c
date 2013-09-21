@@ -45,6 +45,26 @@
 # include <sys/types.h>
 #endif
 
+#if defined(VMS)
+# include <descrip.h>
+# include <rms.h>
+# include <smgdef.h>
+# include <stsdef.h>
+# include <lib$routines.h>
+# include <smg$routines.h>
+# include <starlet.h>
+# include <str$routines.h>
+extern int vms_getname(char **, struct FAB *, struct RAB *);
+# ifdef vax
+   /*
+   ** On VAX we use the GCC compiler (for 64-bit support) and linking against
+   ** the DEC C RTL produces multiply-defined symbols which requires this
+   ** little work-around here strdup is not actually called.
+   */
+#  define strdup(s) strcpy(malloc(sizeof((s))), (s))
+# endif
+#endif
+
 #ifdef HAVE_EDITLINE
 # include <editline/editline.h>
 #endif
@@ -53,10 +73,20 @@
 # include <readline/history.h>
 #endif
 #if !defined(HAVE_EDITLINE) && (!defined(HAVE_READLINE) || HAVE_READLINE!=1)
-# define readline(p) local_getline(p,stdin,0)
+# if defined(VMS)
+extern char *vms_readline(char *);
+extern void vms_read_history(char *);
+extern void vms_write_history(char *);
+#  define readline(p) vms_readline(p)
+#  define read_history(f) vms_read_history(f)
+#  define write_history(f) vms_write_history(f)
+# else
+#  define readline(p) local_getline(p,stdin,0)
+#  define read_history(X)
+#  define write_history(X)
+#  define stifle_history(X)
+# endif
 # define add_history(X)
-# define read_history(X)
-# define write_history(X)
 # define stifle_history(X)
 #endif
 
@@ -91,7 +121,7 @@ static int enableTimer = 0;
 #define ToLower(X)  (char)tolower((unsigned char)X)
 
 #if !defined(_WIN32) && !defined(WIN32) && !defined(_WRS_KERNEL) \
- && !defined(__minux)
+ && !defined(__minux) && !defined(VMS)
 #include <sys/time.h>
 #include <sys/resource.h>
 
@@ -201,6 +231,33 @@ static void endTimer(void){
 #define BEGIN_TIMER beginTimer()
 #define END_TIMER endTimer()
 #define HAS_TIMER hasTimer()
+
+#elif defined(VMS)
+
+/* Saved resource information for the beginning of an operation */
+static int context = 0;
+
+/*
+** Begin timing an operation
+*/
+static void beginTimer(void){
+  if( enableTimer ){
+    lib$init_timer(&context);
+  }
+}
+
+/*
+** Print the timing results.
+*/
+static void endTimer(void){
+  if( enableTimer ){
+    lib$show_timer(&context);
+  }
+}
+
+#define BEGIN_TIMER beginTimer()
+#define END_TIMER endTimer()
+#define HAS_TIMER 1
 
 #else
 #define BEGIN_TIMER 
@@ -335,7 +392,7 @@ static void shellstaticFunc(
 ** The interface is like "readline" but no command-line editing
 ** is done.
 */
-static char *local_getline(char *zPrompt, FILE *in, int csvFlag){
+char *local_getline(char *zPrompt, FILE *in, int csvFlag){
   char *zLine;
   int nLine;
   int n;
@@ -2786,6 +2843,8 @@ static int process_input(struct callback_data *p, FILE *in){
   return errCnt>0;
 }
 
+#if !defined(VMS)
+
 /*
 ** Return a pathname which is the user's home directory.  A
 ** 0 return indicates an error of some kind.
@@ -2849,6 +2908,8 @@ static char *find_home_dir(void){
   return home_dir;
 }
 
+#endif /* !VMS */
+
 /*
 ** Read input from the file given by sqliterc_override.  Or if that
 ** parameter is NULL, take input from ~/.sqliterc
@@ -2865,6 +2926,19 @@ static int process_sqliterc(
   FILE *in = NULL;
   int rc = 0;
 
+#if defined(VMS)
+  /* When we open the initialization file, only supply the default file
+  ** spec. if the name did not come from "-init".
+  */
+  if (sqliterc == 0) {
+    sqlite3_initialize();
+    in = fopen("SQLITE_INIT","r","dna=SYS$LOGIN:.DAT",
+	"acc",vms_getname,&zBuf);
+    sqliterc = zBuf;
+  } else {
+    in = fopen(sqliterc,"r");
+  }
+#else
   if (sqliterc == NULL) {
     home_dir = find_home_dir();
     if( home_dir==0 ){
@@ -2878,6 +2952,7 @@ static int process_sqliterc(
     sqliterc = zBuf;
   }
   in = fopen(sqliterc,"rb");
+#endif /* VMS */
   if( in ){
     if( stdin_is_interactive ){
       fprintf(stderr,"-- Loading resources from %s\n",sqliterc);
@@ -2885,7 +2960,7 @@ static int process_sqliterc(
     rc = process_input(p,in);
     fclose(in);
   }
-  sqlite3_free(zBuf);
+  if (zBuf != 0) sqlite3_free(zBuf);
   return rc;
 }
 
@@ -2976,7 +3051,11 @@ int main(int argc, char **argv){
             sqlite3_sourceid(), SQLITE_SOURCE_ID);
     exit(1);
   }
+#if defined(VMS)
+  Argv0 = "sqlite3";
+#else
   Argv0 = argv[0];
+#endif
   main_init(&data);
   stdin_is_interactive = isatty(0);
 
@@ -3205,6 +3284,9 @@ int main(int argc, char **argv){
         "Enter SQL statements terminated with a \";\"\n",
         sqlite3_libversion(), sqlite3_sourceid()
       );
+#if defined(VMS)
+      zHistory = strdup("SQLITE_HISTORY");
+#else
       zHome = find_home_dir();
       if( zHome ){
         nHistory = strlen30(zHome) + 20;
@@ -3212,7 +3294,8 @@ int main(int argc, char **argv){
           sqlite3_snprintf(nHistory, zHistory,"%s/.sqlite_history", zHome);
         }
       }
-#if defined(HAVE_READLINE) && HAVE_READLINE==1
+#endif
+#if defined(HAVE_READLINE) && HAVE_READLINE==1 || defined(VMS)
       if( zHistory ) read_history(zHistory);
 #endif
       rc = process_input(&data, 0);

@@ -1,0 +1,280 @@
+!									!
+! 2013 March 10								!
+!									!
+! The author disclaims copyright to this source code.  In place of	!
+! a legal notice, here is a blessing:					!
+!									!
+!    May you do good and not evil.					!
+!    May you find forgiveness for yourself and forgive others.		!
+!    May you share freely, never taking more than you give.		!
+!									!
+!***********************************************************************!
+!	This module contains the code that builds the symbol vector	!
+!  for SQLite3.  It does this by reading in an existing symbol table,	!
+!  then the symbols defined in the object library.  Any new symbols are !
+!  tacked on the end and the new symbol vector is saved.  If any symbols!
+!  are not present in the object library that are listed in the symbol  !
+!  vectore, are warning is issued.					!
+!									!
+
+@^A%MAKE_SYMBOL_VECTOR  V2.0%	! Identify myself...			!
+13^T 10^T
+
+0J Z"N <@FS%^ES% %;>		! Clean up the buffer, if it's there	!
+	0J 0A-32"E D '		!   strip leading spaces		!
+	ZJ -1A-32"E -D '	!   and trailing spaces			!
+'				! endif buffer there			!
+HXZ HK				! Save possible command			!
+
+!		Set flags for our use, and close this file		!
+
+[S ^XUS [S EDUS [S EHUS [S	! Save all the existing flags		!
+ESUS [S EVUS [S ETUS [S EUUS [S	! so we can restore the user to		!
+				! his original state on exit		!
+
+^D				! Set Radix to 10			!
+0^X				! Case-sensitive search			!
+0ED				! ^ in search means ConTRL		!
+				! Disable Y or _ if data loss		!
+2EH				! Full error messages			!
+0ES 0EV				! No typeout after search		!
+2#16#128#512#8192ET
+! Set ET flag as follows -						!
+!     1 rw typeout in image mode					!
+!     2 rw terminal is a scope						!
+!     4 rw read lower case						!
+!     8 rw ^T reads with no echo					!
+!    16 rw cancel ^O on typeout						!
+!    32 rw read with no wait, returns -1 if no input			!
+!    64 rw detach flag							!
+!   128 rw abort on error						!
+!   256 rw truncate to set width					!
+!   512 ro terminal is scope and watch is present			!
+!  1024 ro terminal is refresh and watch is present			!
+!  2048 xx not used							!
+!  4096 rw 1 => 8bit, 0 => 7bit						!
+!  8192 rw Surrogate escape on						!
+! 16384 xx not used							!
+! 32768 rw trap ^C and reset						!
+-1EU				! No case flagging on output		!
+!  EO  is Teco's Version Number						!
+! 0EJ  is Job Number							!
+! 1EJ  is KB Number							!
+! 2EJ  is PPN								!
+@EI%%				! Close this file			!
+
+! --------------------------------------------------------------------- !
+! *									!
+!									!
+! X$ is library listing file name (input)	!
+! Y$ is symbol vector file name (input/output)	!
+! Z$ is platform specific transfer vector definition !
+! N$ is new symbols from library listing	!
+! T$ is symbol table !
+! H$ contains SQLITE_API prefixed stuff from sqlite3.h header file !
+! !
+! -- keep moving everything into mainline...arch-specific is only macros!
+! A$ contains macro to generate Alpha/I64 symbol vector !
+! L$ contains macro to build symbol vector	!
+! R$ contains macro to load library listing	!
+! V$ contains macro to generate VAX vector	!
+!!
+! --------------------------------------------------------------------- !
+
+GZ					! Dump command line into buffer	!
+0J Z"N <@FS%^ES% %;>			! Clean up the buffer, if there	!
+    @^UX%% @^UY%% @^UZ%%		!   init filename buffers	!
+    0J 0A-32"E D '			!   strip leading spaces	!
+    ZJ -1A-32"E -D '			!   and trailing spaces		!
+    0J
+    < 0A:@^UY%% C 0A-^^="E C0;' >
+    .,ZXX		
+'
+
+! --------------------------------------------------------------------- !
+! Read in the library listing and convert to a ^ delimited list of	!
+! global symbols, all stored in N$.					!
+! --------------------------------------------------------------------- !
+@^A%...Reading symbol vector table from library listing...%
+HK					! Clear the buffer		!
+@^UN%%					! Clear input symbol list	!
+:@ER%^EQX%"F                            ! If could not open file then   !
+    @^A%Can't find file "% :G.I @^A%"...% 13^T 2<10^T>
+|					! else				!
+    0U.F				!   Clear "in module"		!
+    < :EY;				!   Yank in a page		!
+    	<				!     loop over lines		!
+	    ::@S%Module %"S		!       If line starts Module	!
+		-1U.F			!         set "in module"	!
+	    | Q.F"S			!       else if "in module"	!
+		::@S%^X^EL%"S		!         if line is blank	!
+		    ^SC			!	    backup . before eol	!
+		    0U.F		!           clear "in module"	!
+		|			!         else			!
+		    <			!           loop over line	!
+			< 0A-^^ "N 0;' C > !	      skip leading space!
+			< 0A"C 0A:@^UN%% C | 0;' > !  put symbol name,	!
+			^^,:@^UN%%	!             and ',' into N$	!
+		    0A-13"E 0;' >	!           leave if at line end!
+		'			!	  end if		!
+	    ' '				!       end if			!
+    	L .-Z;>				!     next line, leave if none	!
+    >					!   page loop			!
+    HK					!   clear text buffer		!
+    @^A%done...% 13^T 10^T
+'					! end if			!
+
+! --------------------------------------------------------------------- !
+! Here we load all lines from the header file that describes the public	!
+! interface to SQLite3, sqlite3.h, and store it away in H$.  This is	!
+! used to verify the global symbols read from the library listing are	!
+! in fact public routines (and data cells).				!
+! --------------------------------------------------------------------- !
+:QN"N					! if lib listing loaded	then	!
+    @^A%...Loading public header file for comparison...%
+    @^UH%%				!   Clear header file buffer	!
+    :@ER%SRC_DIR:SQLITE3.H%"S		!   Open public, if success	!
+    	< :EY;				!     then Yank in a page	!
+	    < :@S%^ELSQLITE_API^ES%;	!       grab SQLITE_API lines	!
+		:@FB%^Xsqlite3_%"S
+		    ^S+1C
+	    	    :XH			!	stick them in H$	!
+		'
+	    >				!	end loop		!
+    	>				!     end loop			!
+	@^A%sorting...%
+	HK GH 0J			!     load in buffer for sort	!
+	< 0U.F				!     clear flag, begin loop	!
+	    0J <
+		0L X.A 7U.A
+		L
+		.-Z"E 0;'
+		8C
+		:Q.A-(Q.A+1) <
+		    %.AQ.A"C
+		    	(Q.AQ.A#32)-(0A#32)"L
+			    0;
+		    	| (Q.AQ.A#32)-(0A#32)"G
+			    -1U.F
+			    0L X.A K -L G.A
+			    0;
+		    	|
+			    C
+		    	' '
+		    |
+			0;
+		    '
+		>
+    	    >				!				!
+	Q.F; >				!     go again if line switched	!
+	HXH				!     store in H$		!
+    	@^A%done...% 13^T 10^T		!     report			!
+    |					!   else			!
+	@^A%unable to open SRC_DIR:SQLITE3.H% 13^T 10^T
+    '					!   endif			!
+'					! endif				!
+
+! --------------------------------------------------------------------- !
+! Load the existing symbol table.  We use this to test for missing	!
+! entries (useful when building a new version of SQLite) as well as	!
+! retaining a record of the symbol table, so it can be updated without	!
+! losing compatability.							!
+! --------------------------------------------------------------------- !
+:QN+:QH"N
+    @^A%...Loading existing symbol vector table...%
+    HK					! Clear text buffer		!
+    :@ER%^EQY%"S			! If can open existing vector	!
+	:EY				!   then load it into buffer	!
+    '					! endif				!
+    0J					! reset .			!
+    @^A%done...% 13^T 10^T
+
+! --------------------------------------------------------------------- !
+! Using the public interface definitions, previous symbol vector table	!
+! and the new symbols from the object library listing, we construct an	!
+! udpated table.							!
+! --------------------------------------------------------------------- !
+    @^A%...Building new symbol vector table...%
+    0U.P <				! Init pointer			!
+	@^U.S%%
+	<
+	    Q.PQN:@^U.S%%
+	    %.PQN-^^,"E
+		%.P^[
+		0;
+	    '
+	>
+	0J :@S%^EQ.S,^ED,^EA^X^EL%"F	!   if no matching record	!
+	    HX2 .U2			!     store sym table		!
+	    HK GH			!     load public interface	!
+	    0J :@S%^EQ.S%U3 Q3"S	!     if public			!
+		::@S%^ES%^[		!       skip whitespace		!
+		0AU3			!       store next character	!
+	    '				!     end if			!
+	    HK G2 Q2J			!     restore sym table		!
+	    Q3"N			!     if public			!
+		ZJ G.S @I%,2,%		!       then new record		!
+	        Q3-^^("E		!       if function		!
+		    @I%P%		!	  set symbol type to P	!
+		|			!	else treat as data	!
+		    @I%D%		!         set symbol type to D	!
+		'			!	end if			!
+		13@I%% 10@I%%		!	terminate record	!
+	    '				!     end if			!
+	|				!   else			!
+	    -2@S%,% C 			!     backup to flag		!
+	    D @I%1%			!     set it to known		!
+    	'				!   end if			!
+    :QN-Q.P"E 0;' >
+    @^A%...done...% 13^T 10^T
+
+! --------------------------------------------------------------------- !
+! Now, examine the flags attached to the symbols to determine if there	!
+! have been any changes to the symbol vector table and reports them.	!
+! --------------------------------------------------------------------- !
+    @^A%...Checking for changes in symbol vector table...%
+    -1UT				! Symbol table unchanged...	!
+    HXT					! Store symbol table		!
+    0J
+    <
+	@^A%.%
+	@^U.S%%
+	< 0A:@^U.S%% C 0A-^^,"E 0;' >	! fetch name into .S$ !
+	@S%,% \U.S			! fetch flag !
+	-D @I%0%			!  clear flag !
+	Q.S-1"L				! if not found !
+	    @S%,% 0A-^^S"N		!   if not already aware of it !
+	        13^T 10^T @^A%   ...% :G.S @^A% is missing%
+		D @I%S%			!    change so we are !
+	        0UT			!    indicate a change !
+	    '				!   end if !
+	| Q.S-1"G			! else if new symbol !
+	    13^T 10^T @^A%   ...% :G.S @^A% is new%
+	    0UT				!    indicate a change !
+	' '				! end if !
+
+	L
+    .-Z; >
+    13^T 10^T
+    QT"F
+	@^A%...symbol table has changed%
+	:@EW%^EQY/STM%"S
+	    HP EF
+	|
+	    @^A%Could not open % :GY @^A% for output% 13^T 10^T
+	'
+    |
+	@^A%...symbol table has not changed%
+    '
+    @^A%...done...% 13^T 10^T
+'
+
+! --------------------------------------------------------------------- !
+! *		    Now restore all the flags and exit			!
+! --------------------------------------------------------------------- !
+
+]S QSEU ]S QSET ]S QSEV ]S QSES ]S	! Restore all the flags we	!
+QSEH ]S QSED ]S QS^X ]S			! saved at the start		!
+
+^C
+
