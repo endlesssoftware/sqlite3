@@ -84,7 +84,8 @@ const static int lock_modes[] = {
 */
 typedef struct vmsFile vmsFile;
 struct vmsFile {
-  const sqlite3_io_methods *pMethod;  /*** Must be first ***/
+  sqlite3_io_methods const *pMethod;	/*** Must be first ***/
+  sqlite3_vfs *pVfs;			/* The VFS that created his vmsFile */
   int szChunk;
   int szHint;
   char lock_name[LOCK_NAME_MAX+1];
@@ -688,6 +689,7 @@ static int vmsOpen(
 
   memset(pFile, 0, sizeof(*pFile));
   pFile->pMethod = &vmsIoMethod;
+  pFile->pVfs = pVfs;
 
   pFile->nam = cc$rms_nam;
   pFile->nam.nam$l_esa = pFile->esa;
