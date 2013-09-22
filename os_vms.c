@@ -532,6 +532,10 @@ static int vmsFileControl(
       pFile->szHint = (*(int *)pArg / SQLITE_DEFAULT_SECTOR_SIZE) + 1;
       return SQLITE_OK;
     }
+    case SQLITE_FCNTL_VFSNAME: {
+      *(char**)pArg = sqlite3_mprintf("%s", pFile->pVfs->zName);
+      return SQLITE_OK;
+    }
   }
   return SQLITE_NOTFOUND;
 }
