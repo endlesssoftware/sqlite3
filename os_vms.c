@@ -948,7 +948,7 @@ static void (*vmsDlSym(
   dSymbol.dsc$b_class = DSC$K_CLASS_S;
   dSymbol.dsc$a_pointer = (char *)zSymbol;
 
-  lib$find_image_symbol(dName, &dSymbol, &result, 0, &flags);
+  lib$find_image_symbol(dName, &dSymbol, &result, 0, flags);
 
   return result;
 }
